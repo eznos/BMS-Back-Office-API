@@ -1,0 +1,22 @@
+{
+  "name": "bms-back-office-api",
+  "version": "1.0.0",
+  "description": "api for billing management system",
+  "main": "./api/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eznos/BMS-Back-Office-API.git"
+  },
+  "keywords": [
+    "bms-api"
+  ],
+  "author": "Eznos",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eznos/BMS-Back-Office-API/issues"
+  },
+  "homepage": "https://github.com/eznos/BMS-Back-Office-API#readme"
+}
