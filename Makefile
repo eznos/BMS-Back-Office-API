@@ -11,6 +11,12 @@ stop-db:
 	-f docker-compose.db.yml \
 	down
 
+db-up:
+	@npx sequelize-cli db:migrate
+
+db-down:
+	@npx sequelize-cli db:migrate:undo
+
 gen-config-dev:
 	@ln -sfn .env.dev .env
 
