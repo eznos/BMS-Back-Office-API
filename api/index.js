@@ -1,10 +1,11 @@
-const dotenv = require('dotenv').config()
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const dayjs = require('dayjs')
 const utc = require('dayjs/plugin/utc')
 const timezone = require('dayjs/plugin/timezone')
+const repo = require('./server/repositories/models/index')
 
 // * dayjs use timezone
 dayjs.extend(utc)
