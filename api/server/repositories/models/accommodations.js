@@ -1,42 +1,48 @@
-const { DataTypes } = require("sequelize");
-module.exports = (sequelize, Sequelize) => {
-    const accommodations = sequelize.define(
-        "accommodations",
-        {
-            id: {
-                unique: true,
-                allowNull: false,
-                primaryKey: true,
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "id",
-                comment: "ไอดีของตาราง",
-            },
-            host: {
-                type: Sequelize.BOOLEAN,
-                field: "host",
-            },
-            deleted: {
-                type: Sequelize.BOOLEAN,
-                field: "deleted",
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "created_at",
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "updated_at",
-            },
-        },
-        {
-            tableName: "accommodations",
-        }
-    );
+const {DataTypes} = require("sequelize")
 
-    return accommodations;
-};
+module.exports = (sequelize) => {
+    const accommodations = sequelize.define("accommodations", {
+        id: {
+            unique: true,
+            allowNull: false,
+            primaryKey: true,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            field: "id",
+            comment: "ไอดีของตาราง",
+        },
+        host: {
+            type: DataTypes.BOOLEAN,
+            field: "host",
+        },
+        deleted: {
+            type: DataTypes.BOOLEAN,
+            field: "deleted",
+        },
+        createdAt: {
+            allowNull: false,
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+            field: "created_at",
+        },
+        updatedAt: {
+            allowNull: false,
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+            field: "updated_at",
+        },
+    }, {
+        sequelize,
+        modelName: "accommodations",
+        tableName: "accommodations",
+        timestamps: true,
+    })
+
+    accommodations.associate = (models) => {
+        // accommodations.belongsTo(models.users, {foreignKey: "user_id"})
+        accommodations.hasMany(models.billings, {foreignKey: {name: "accommodationId", field: "accommodation_id"},})
+        accommodations.belongsTo(models.rooms, {foreignKey: "room_id"})
+    }
+
+    return accommodations
+}

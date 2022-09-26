@@ -1,52 +1,58 @@
-const { DataTypes } = require("sequelize");
-module.exports = (sequelize, Sequelize) => {
-    const buildings = sequelize.define(
-        "buildings",
-        {
-            id: {
-                unique: true,
-                allowNull: false,
-                primaryKey: true,
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "id",
-                comment: "ไอดีของตาราง",
-            },
-            name: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                field: "name",
-                unique: true,
-            },
-            imageUrl: {
-                type: DataTypes.STRING,
-                field: "image_url",
-            },
-            lat: {
-                type: DataTypes.DOUBLE,
-                field: "lat",
-            },
-            lng: {
-                type: DataTypes.DOUBLE,
-                field: "lng",
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "created_at",
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "updated_at",
-            },
-        },
-        {
-            tableName: "buildings",
-        }
-    );
+const {DataTypes} = require("sequelize")
 
-    return buildings;
-};
+module.exports = (sequelize) => {
+    const buildings = sequelize.define("buildings", {
+        id: {
+            unique: true,
+            allowNull: false,
+            primaryKey: true,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            field: "id",
+            comment: "ไอดีของตาราง",
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            field: "name",
+            unique: true,
+        },
+        imageUrl: {
+            type: DataTypes.STRING,
+            field: "image_url",
+        },
+        lat: {
+            type: DataTypes.DOUBLE,
+            field: "lat",
+        },
+        lng: {
+            type: DataTypes.DOUBLE,
+            field: "lng",
+        },
+        createdAt: {
+            allowNull: false,
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+            field: "created_at",
+        },
+        updatedAt: {
+            allowNull: false,
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+            field: "updated_at",
+        },
+    }, {
+        sequelize,
+        modelName: "buildings",
+        tableName: "buildings",
+        timestamps: true,
+    })
+
+    buildings.associate = (models) => {
+        buildings.belongsTo(models.zones, {foreignKey: "zone_id"})
+        buildings.belongsTo(models.waterZones, {foreignKey: "water_zone_id"})
+        buildings.hasMany(models.rooms, {foreignKey: {name: "buildingsId", field: "buildings_id"}})
+    }
+
+    return buildings
+}

@@ -1,62 +1,66 @@
-const { DataTypes } = require("sequelize");
-module.exports = (sequelize, Sequelize) => {
-    const billings = sequelize.define(
-        "billings",
-        {
-            id: {
-                unique: true,
-                allowNull: false,
-                primaryKey: true,
-                type: Sequelize.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "id",
-                comment: "ไอดีของตาราง",
-            },
-            billingType: {
-                type: Sequelize.ENUM,
-                values: ["electricity", "water"],
-                field: "billing_type",
-                allowNull: false,
-            },
-            status: {
-                type: Sequelize.ENUM,
-                values: ["draft", "in_progess", "calculated", "exported"],
-                field: "status",
-                allowNull: false,
-            },
-            unit: {
-                type: Sequelize.INTEGER,
-                field: "unit",
-            },
-            price: {
-                type: Sequelize.FLOAT,
-                field: "price",
-            },
-            priceDiff: {
-                type: Sequelize.FLOAT,
-                field: "price_diff",
-            },
-            totalPay: {
-                type: Sequelize.FLOAT,
-                field: "total_pay",
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: Sequelize.NOW,
-                field: "created_at",
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: Sequelize.NOW,
-                field: "updated_at",
-            },
-        },
-        {
-            tableName: "billings",
-        }
-    );
+const {DataTypes} = require("sequelize")
 
-    return billings;
-};
+module.exports = (sequelize) => {
+    const billings = sequelize.define("billings", {
+        id: {
+            unique: true,
+            allowNull: false,
+            primaryKey: true,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            field: "id",
+            comment: "ไอดีของตาราง",
+        },
+        billingType: {
+            type: DataTypes.ENUM,
+            values: ["electricity", "water"],
+            field: "billing_type",
+            allowNull: false,
+        },
+        status: {
+            type: DataTypes.ENUM,
+            values: ["draft", "in_progess", "calculated", "exported"],
+            field: "status",
+            allowNull: false,
+        },
+        unit: {
+            type: DataTypes.INTEGER,
+            field: "unit",
+        },
+        price: {
+            type: DataTypes.FLOAT,
+            field: "price",
+        },
+        priceDiff: {
+            type: DataTypes.FLOAT,
+            field: "price_diff",
+        },
+        totalPay: {
+            type: DataTypes.FLOAT,
+            field: "total_pay",
+        },
+        createdAt: {
+            allowNull: false,
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+            field: "created_at",
+        },
+        updatedAt: {
+            allowNull: false,
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+            field: "updated_at",
+        },
+    }, {
+        sequelize,
+        modelName: "users",
+        tableName: "billings",
+        timestamps: true,
+    })
+
+    billings.associate = (models) => {
+        billings.belongsTo(models.accommodations, {foreignKey: "accommodation_id"})
+    }
+
+    return billings
+}

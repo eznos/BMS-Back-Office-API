@@ -1,8 +1,7 @@
-const { DataTypes } = require("sequelize");
-module.exports = (sequelize, Sequelize) => {
-    const zones = sequelize.define(
-        "zones",
-        {
+const {DataTypes} = require("sequelize")
+
+module.exports = (sequelize) => {
+    const zones = sequelize.define("zones", {
             id: {
                 unique: true,
                 allowNull: false,
@@ -14,27 +13,35 @@ module.exports = (sequelize, Sequelize) => {
             },
             name: {
                 unique: true,
-                type: Sequelize.STRING,
+                type: DataTypes.STRING,
                 allowNull: false,
                 field: "name",
             },
             createdAt: {
                 allowNull: false,
-                type: Sequelize.DATE,
+                type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,
                 field: "created_at",
             },
             updatedAt: {
                 allowNull: false,
-                type: Sequelize.DATE,
+                type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,
                 field: "updated_at",
             },
         },
         {
+            sequelize,
+            modelName: "zones",
             tableName: "zones",
-        }
-    );
+            timestamps: true,
+        })
 
-    return zones;
-};
+    zones.associate = (models) => {
+        zones.hasMany(models.rooms, {foreignKey: {name: "roomId", field: "room_id"}})
+        zones.hasMany(models.buildings, {foreignKey: {name: "buildingId", field: "id"}})
+        zones.hasMany(models.waterZones, {foreignKey: {name: "waterZoneId", field: "water_zone_id"}})
+    }
+
+    return zones
+}
