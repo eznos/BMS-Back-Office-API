@@ -474,7 +474,7 @@ module.exports = {
                 },
             },
             {
-                indexes: [{fields: ["billing_type", "accommodation_id", "status", "createdAt"]}],
+                indexes: [{fields: ["billing_type", "accommodation_id", "status", "created_at"]}],
             }
         );
     },
