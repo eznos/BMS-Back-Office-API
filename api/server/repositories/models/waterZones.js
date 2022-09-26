@@ -11,21 +11,26 @@ module.exports = (sequelize, Sequelize) => {
             field: "id",
             comment: "ไอดีของตาราง",
         },
+        zoneId: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            field: "zone_id",
+        },
         name: {
             unique: true,
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
             field: "name",
         },
         createdAt: {
             allowNull: false,
-            type: Sequelize.DATE,
+            type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             field: "created_at",
         },
         updatedAt: {
             allowNull: false,
-            type: Sequelize.DATE,
+            type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             field: "updated_at",
         },
@@ -37,9 +42,19 @@ module.exports = (sequelize, Sequelize) => {
     })
 
     waterZones.associate = (models) => {
-        waterZones.hasMany(models.rooms, {foreignKey: {name: "waterZoneId", field: "water_zone_id"},})
-        waterZones.hasMany(models.buildings, {foreignKey: {name: "billingId", field: "building_id"},})
-        waterZones.belongsTo(models.zones, {foreignKey: "zoneId"})
+        waterZones.hasMany(models.buildings, {
+            foreignKey: 'water_zone_id',
+            as: 'buildings',
+            onUpdate: 'cascade',
+            sourceKey: 'id'
+        })
+        waterZones.belongsTo(models.zones, {foreignKey: 'zone_id', as: 'zones', onUpdate: 'cascade', targetKey: 'id'})
+        waterZones.hasMany(models.rooms, {
+            foreignKey: 'water_zone_id',
+            as: 'rooms',
+            onUpdate: 'cascade',
+            sourceKey: 'id'
+        })
     }
 
     return waterZones

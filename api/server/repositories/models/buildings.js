@@ -11,6 +11,16 @@ module.exports = (sequelize) => {
             field: "id",
             comment: "ไอดีของตาราง",
         },
+        zoneId: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            field: "zone_id",
+        },
+        waterZoneId: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            field: "water_zone_id",
+        },
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -49,9 +59,14 @@ module.exports = (sequelize) => {
     })
 
     buildings.associate = (models) => {
-        buildings.belongsTo(models.zones, {foreignKey: "zone_id"})
-        buildings.belongsTo(models.waterZones, {foreignKey: "water_zone_id"})
-        buildings.hasMany(models.rooms, {foreignKey: {name: "buildingsId", field: "buildings_id"}})
+        buildings.belongsTo(models.zones, {foreignKey: 'zone_id', as: 'zones', onUpdate: 'cascade', targetKey: 'id'})
+        buildings.belongsTo(models.waterZones, {
+            foreignKey: 'water_zone_id',
+            as: 'water_zones',
+            onUpdate: 'cascade',
+            targetKey: 'id'
+        })
+        buildings.hasMany(models.rooms, {foreignKey: 'building_id', as: 'rooms', onUpdate: 'cascade', sourceKey: 'id'})
     }
 
     return buildings
