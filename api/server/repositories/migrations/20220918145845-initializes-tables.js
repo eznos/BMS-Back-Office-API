@@ -2,9 +2,7 @@ const { DataTypes } = require("sequelize");
 
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable(
-            "users",
-            {
+        await queryInterface.createTable("users",{
                 id: {
                     unique: true,
                     allowNull: false,
@@ -176,6 +174,7 @@ module.exports = {
                 type: DataTypes.ENUM,
                 values: ["electricity", "water"],
                 field: "billing_type",
+                allowNull: false,
             },
             accommodationId: {
                 type: DataTypes.UUID,
@@ -187,6 +186,7 @@ module.exports = {
                 type: DataTypes.ENUM,
                 values: ["draft", "in_progess", "calculated", "exported"],
                 field: "status",
+                allowNull: false,
             },
             unit: {
                 type: DataTypes.INTEGER,
@@ -217,191 +217,221 @@ module.exports = {
                 field: "updated_at",
             },
         });
-        await queryInterface.createTable("zones", {
-            id: {
-                unique: true,
-                allowNull: false,
-                primaryKey: true,
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "id",
-                comment: "ไอดีของตาราง",
+        await queryInterface.createTable("zones",{
+                id: {
+                    unique: true,
+                    allowNull: false,
+                    primaryKey: true,
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "id",
+                    comment: "ไอดีของตาราง",
+                },
+                name: {
+                    unique: true,
+                    type: Sequelize.STRING,
+                    allowNull: false,
+                    field: "name",
+                },
+                createdAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "created_at",
+                },
+                updatedAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "updated_at",
+                },
             },
-            name: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                field: "name",
+            {
+                indexes: [{ unique: true, fields: ["name"] }],
+            }
+        );
+        await queryInterface.createTable("water_zones",{
+                id: {
+                    unique: true,
+                    allowNull: false,
+                    primaryKey: true,
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "id",
+                    comment: "ไอดีของตาราง",
+                },
+                zoneId: {
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "zone_id",
+                },
+                name: {
+                    unique: true,
+                    type: Sequelize.STRING,
+                    allowNull: false,
+                    field: "name",
+                },
+                createdAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "created_at",
+                },
+                updatedAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "updated_at",
+                },
             },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "created_at",
+            {
+                indexes: [{ unique: true, fields: ["name"] }],
+            }
+        );
+        await queryInterface.createTable("buildings",{
+                id: {
+                    unique: true,
+                    allowNull: false,
+                    primaryKey: true,
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "id",
+                    comment: "ไอดีของตาราง",
+                },
+                zoneId: {
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "zone_id",
+                },
+                waterZoneId: {
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "water_zone_id",
+                },
+                name: {
+                    type: Sequelize.STRING,
+                    allowNull: false,
+                    field: "name",
+                    unique: true,
+                },
+                imageUrl: {
+                    type: DataTypes.STRING,
+                    field: "image_url",
+                },
+                lat: {
+                    type: DataTypes.DOUBLE,
+                    field: "lat",
+                },
+                lng: {
+                    type: DataTypes.DOUBLE,
+                    field: "lng",
+                },
+                createdAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "created_at",
+                },
+                updatedAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "updated_at",
+                },
             },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "updated_at",
+            {
+                indexes: [{ unique: true, fields: ["name"] }],
+            }
+        );
+        await queryInterface.createTable("rooms",{
+                id: {
+                    unique: true,
+                    allowNull: false,
+                    primaryKey: true,
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "id",
+                    comment: "ไอดีของตาราง",
+                },
+                zoneId: {
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "zone_id",
+                },
+                waterZoneId: {
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "water_zone_id",
+                },
+                buildingId: {
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "building_id",
+                },
+                roomNo: {
+                    type: Sequelize.STRING,
+                    allowNull: false,
+                    field: "room_no",
+                },
+                roomType: {
+                    type: DataTypes.ENUM,
+                    values: ["single", "family_1", "family_2"],
+                    field: "room_type",
+                },
+                electricityNo: {
+                    unique: true,
+                    type: Sequelize.STRING,
+                    field: "electricity_no",
+                },
+                electricityMeterNo: {
+                    unique: true,
+                    type: Sequelize.STRING,
+                    field: "electricity_meter_no",
+                },
+                waterNo: {
+                    unique: true,
+                    type: DataTypes.STRING,
+                    field: "water_no",
+                },
+                waterMeterNo: {
+                    unique: true,
+                    type: Sequelize.STRING,
+                    field: "water_meter_no",
+                },
+                status: {
+                    type: DataTypes.ENUM,
+                    values: ["empty", "not_empty"],
+                    field: "status",
+                },
+                createdAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "created_at",
+                },
+                updatedAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "updated_at",
+                },
             },
-        });
-        await queryInterface.createTable("water_zones", {
-            id: {
-                unique: true,
-                allowNull: false,
-                primaryKey: true,
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "id",
-                comment: "ไอดีของตาราง",
-            },
-            zoneId: {
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "zone_id",
-            },
-            name: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                field: "name",
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "created_at",
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "updated_at",
-            },
-        });
-        await queryInterface.createTable("buildings", {
-            id: {
-                unique: true,
-                allowNull: false,
-                primaryKey: true,
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "id",
-                comment: "ไอดีของตาราง",
-            },
-            zoneId: {
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "zone_id",
-            },
-            waterZoneId: {
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "water_zone_id",
-            },
-            name: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                field: "name",
-            },
-            imageUrl: {
-                type: DataTypes.STRING,
-                field: "image_url",
-            },
-            lat: {
-                type: DataTypes.DOUBLE,
-                field: "lat",
-            },
-            lng: {
-                type: DataTypes.DOUBLE,
-                field: "lng",
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "created_at",
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "updated_at",
-            },
-        });
-        await queryInterface.createTable("buildings", {
-            id: {
-                unique: true,
-                allowNull: false,
-                primaryKey: true,
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "id",
-                comment: "ไอดีของตาราง",
-            },
-            zoneId: {
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "zone_id",
-            },
-            waterZoneId: {
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "water_zone_id",
-            },
-            buildingId: {
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "building_id",
-            },
-            roomNo: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                field: "room_no",
-            },
-            roomType: {
-                type: DataTypes.ENUM,
-                values: ["single", "family_1", "family_2"],
-                field: "room_type",
-            },
-            electricityNo: {
-                type: DataTypes.STRING,
-                field: "electricity_no",
-            },
-            electricityMeterNo: {
-                type: DataTypes.STRING,
-                field: "electricity_meter_no",
-            },
-            waterNo: {
-                type: DataTypes.STRING,
-                field: "water_no",
-            },
-            waterMeterNo: {
-                type: DataTypes.STRING,
-                field: "water_meter_no",
-            },
-            status: {
-                type: DataTypes.ENUM,
-                values: ["empty", "not_empty"],
-                field: "status",
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "created_at",
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "updated_at",
-            },
-        });
+            {
+                indexes: [{ unique: true, fields: ["roomNo"] }],
+            }
+        );
     },
 
     async down(queryInterface, Sequelize) {
         await queryInterface.dropAllTables();
         await queryInterface.removeIndex("users", ["username", "email"]);
+        await queryInterface.removeIndex("rooms", [
+            "roomNo",
+            "electricityNo",
+            "electricityMeterNo",
+            "waterNo",
+            "waterMeterNo",
+        ]);
         await queryInterface.dropAllEnums();
     },
 };
