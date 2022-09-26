@@ -1,8 +1,8 @@
-const { DataTypes } = require("sequelize");
+const {DataTypes, Deferrable} = require("sequelize");
 
 module.exports = {
-    async up(queryInterface, Sequelize) {
-        await queryInterface.createTable("users",{
+    async up(queryInterface) {
+        await queryInterface.createTable("users", {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -14,16 +14,16 @@ module.exports = {
                 },
                 username: {
                     allowNull: false,
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "username",
                 },
                 password: {
                     allowNull: false,
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "password",
                 },
                 otpSecret: {
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "otp_secret",
                 },
                 role: {
@@ -73,11 +73,11 @@ module.exports = {
                     field: "affiliation",
                 },
                 firstName: {
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "first_name",
                 },
                 lastName: {
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "last_name",
                 },
                 gender: {
@@ -87,137 +87,39 @@ module.exports = {
                 },
                 email: {
                     unique: true,
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "email",
                 },
                 phoneNumber: {
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "phone_number",
                 },
                 profileUrl: {
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "profile_url",
                 },
                 deleted: {
-                    type: Sequelize.BOOLEAN,
+                    type: DataTypes.BOOLEAN,
                     field: "deleted",
                 },
                 createdAt: {
                     allowNull: false,
-                    type: Sequelize.DATE,
+                    type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
                     field: "created_at",
                 },
                 updatedAt: {
                     allowNull: false,
-                    type: Sequelize.DATE,
+                    type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
                     field: "updated_at",
                 },
             },
             {
-                indexes: [{ unique: true, fields: ["username", "email"] }],
+                indexes: [{unique: true, fields: ["username", "email"]}],
             }
         );
-        await queryInterface.createTable("accommodations", {
-            id: {
-                unique: true,
-                allowNull: false,
-                primaryKey: true,
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "id",
-                comment: "ไอดีของตาราง",
-            },
-            roomId: {
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "room_id",
-            },
-            userId: {
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "user_id",
-            },
-            host: {
-                type: Sequelize.BOOLEAN,
-                field: "host",
-            },
-            deleted: {
-                type: Sequelize.BOOLEAN,
-                field: "deleted",
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "created_at",
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "updated_at",
-            },
-        });
-        await queryInterface.createTable("billings", {
-            id: {
-                unique: true,
-                allowNull: false,
-                primaryKey: true,
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "id",
-                comment: "ไอดีของตาราง",
-            },
-            billingType: {
-                type: DataTypes.ENUM,
-                values: ["electricity", "water"],
-                field: "billing_type",
-                allowNull: false,
-            },
-            accommodationId: {
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                field: "accommodation_id",
-                comment: "ไอดีของตารางaccommodation ที่เป็นคีย์นอก",
-            },
-            status: {
-                type: DataTypes.ENUM,
-                values: ["draft", "in_progess", "calculated", "exported"],
-                field: "status",
-                allowNull: false,
-            },
-            unit: {
-                type: DataTypes.INTEGER,
-                field: "unit",
-            },
-            price: {
-                type: DataTypes.FLOAT,
-                field: "price",
-            },
-            priceDiff: {
-                type: DataTypes.FLOAT,
-                field: "price_diff",
-            },
-            totalPay: {
-                type: DataTypes.FLOAT,
-                field: "total_pay",
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "created_at",
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: DataTypes.NOW,
-                field: "updated_at",
-            },
-        });
-        await queryInterface.createTable("zones",{
+        await queryInterface.createTable("zones", {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -229,28 +131,28 @@ module.exports = {
                 },
                 name: {
                     unique: true,
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     allowNull: false,
                     field: "name",
                 },
                 createdAt: {
                     allowNull: false,
-                    type: Sequelize.DATE,
+                    type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
                     field: "created_at",
                 },
                 updatedAt: {
                     allowNull: false,
-                    type: Sequelize.DATE,
+                    type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
                     field: "updated_at",
                 },
             },
             {
-                indexes: [{ unique: true, fields: ["name"] }],
+                indexes: [{fields: ["name"]}],
             }
         );
-        await queryInterface.createTable("water_zones",{
+        await queryInterface.createTable("water_zones", {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -264,31 +166,36 @@ module.exports = {
                     type: DataTypes.UUID,
                     defaultValue: DataTypes.UUIDV4,
                     field: "zone_id",
+                    references: {
+                        model: 'zones',
+                        key: 'id',
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE
+                    }
                 },
                 name: {
                     unique: true,
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     allowNull: false,
                     field: "name",
                 },
                 createdAt: {
                     allowNull: false,
-                    type: Sequelize.DATE,
+                    type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
                     field: "created_at",
                 },
                 updatedAt: {
                     allowNull: false,
-                    type: Sequelize.DATE,
+                    type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
                     field: "updated_at",
                 },
             },
             {
-                indexes: [{ unique: true, fields: ["name"] }],
+                indexes: [{fields: ["zone_id", "name"]}],
             }
         );
-        await queryInterface.createTable("buildings",{
+        await queryInterface.createTable("buildings", {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -302,14 +209,24 @@ module.exports = {
                     type: DataTypes.UUID,
                     defaultValue: DataTypes.UUIDV4,
                     field: "zone_id",
+                    references: {
+                        model: 'zones',
+                        key: 'id',
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE
+                    }
                 },
                 waterZoneId: {
                     type: DataTypes.UUID,
                     defaultValue: DataTypes.UUIDV4,
                     field: "water_zone_id",
+                    references: {
+                        model: 'water_zones',
+                        key: 'id',
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE
+                    }
                 },
                 name: {
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     allowNull: false,
                     field: "name",
                     unique: true,
@@ -328,22 +245,22 @@ module.exports = {
                 },
                 createdAt: {
                     allowNull: false,
-                    type: Sequelize.DATE,
+                    type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
                     field: "created_at",
                 },
                 updatedAt: {
                     allowNull: false,
-                    type: Sequelize.DATE,
+                    type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
                     field: "updated_at",
                 },
             },
             {
-                indexes: [{ unique: true, fields: ["name"] }],
+                indexes: [{fields: ["zone_id", "water_zone_id", "name"]}],
             }
         );
-        await queryInterface.createTable("rooms",{
+        await queryInterface.createTable("rooms", {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -357,19 +274,34 @@ module.exports = {
                     type: DataTypes.UUID,
                     defaultValue: DataTypes.UUIDV4,
                     field: "zone_id",
+                    references: {
+                        model: 'zones',
+                        key: 'id',
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE
+                    }
                 },
                 waterZoneId: {
                     type: DataTypes.UUID,
                     defaultValue: DataTypes.UUIDV4,
                     field: "water_zone_id",
+                    references: {
+                        model: 'water_zones',
+                        key: 'id',
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE
+                    }
                 },
                 buildingId: {
                     type: DataTypes.UUID,
                     defaultValue: DataTypes.UUIDV4,
                     field: "building_id",
+                    references: {
+                        model: 'buildings',
+                        key: 'id',
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE
+                    }
                 },
                 roomNo: {
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     allowNull: false,
                     field: "room_no",
                 },
@@ -380,12 +312,12 @@ module.exports = {
                 },
                 electricityNo: {
                     unique: true,
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "electricity_no",
                 },
                 electricityMeterNo: {
                     unique: true,
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "electricity_meter_no",
                 },
                 waterNo: {
@@ -395,7 +327,7 @@ module.exports = {
                 },
                 waterMeterNo: {
                     unique: true,
-                    type: Sequelize.STRING,
+                    type: DataTypes.STRING,
                     field: "water_meter_no",
                 },
                 status: {
@@ -405,26 +337,154 @@ module.exports = {
                 },
                 createdAt: {
                     allowNull: false,
-                    type: Sequelize.DATE,
+                    type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
                     field: "created_at",
                 },
                 updatedAt: {
                     allowNull: false,
-                    type: Sequelize.DATE,
+                    type: DataTypes.DATE,
                     defaultValue: DataTypes.NOW,
                     field: "updated_at",
                 },
             },
             {
-                indexes: [{ unique: true, fields: ["roomNo"] }],
+                indexes: [{
+                    unique: true,
+                    fields: ["zone_id", "water_zone_id", "building_id", "room_no", "room_type", "electricity_no",
+                        "electricity_meter_no", "water_no", "water_meter_no", "status"]
+                }],
+            }
+        );
+        await queryInterface.createTable("accommodations", {
+                id: {
+                    unique: true,
+                    allowNull: false,
+                    primaryKey: true,
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "id",
+                    comment: "ไอดีของตาราง",
+                },
+                roomId: {
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "room_id",
+                    references: {
+                        model: 'rooms',
+                        key: 'id',
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE
+                    }
+                },
+                userId: {
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "user_id",
+                    references: {
+                        model: 'users',
+                        key: 'id',
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE
+                    }
+                },
+                host: {
+                    type: DataTypes.BOOLEAN,
+                    field: "host",
+                },
+                deleted: {
+                    type: DataTypes.BOOLEAN,
+                    field: "deleted",
+                },
+                createdAt: {
+                    allowNull: false,
+                    type: DataTypes.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "created_at",
+                },
+                updatedAt: {
+                    allowNull: false,
+                    type: DataTypes.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "updated_at",
+                },
+            },
+            {
+                indexes: [{fields: ["room_id", "user_id", "host"]}],
+            }
+        );
+        await queryInterface.createTable("billings", {
+                id: {
+                    unique: true,
+                    allowNull: false,
+                    primaryKey: true,
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "id",
+                    comment: "ไอดีของตาราง",
+                },
+                billingType: {
+                    type: DataTypes.ENUM,
+                    values: ["electricity", "water"],
+                    field: "billing_type",
+                    allowNull: false,
+                },
+                accommodationId: {
+                    type: DataTypes.UUID,
+                    defaultValue: DataTypes.UUIDV4,
+                    field: "accommodation_id",
+                    comment: "ไอดีของตาราง accommodation ที่เป็นคีย์นอก",
+                    references: {
+                        model: 'accommodations',
+                        key: 'id',
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE
+                    }
+                },
+                status: {
+                    type: DataTypes.ENUM,
+                    values: ["draft", "in_progress", "calculated", "exported"],
+                    field: "status",
+                    allowNull: false,
+                },
+                unit: {
+                    type: DataTypes.INTEGER,
+                    field: "unit",
+                },
+                price: {
+                    type: DataTypes.FLOAT,
+                    field: "price",
+                },
+                priceDiff: {
+                    type: DataTypes.FLOAT,
+                    field: "price_diff",
+                },
+                totalPay: {
+                    type: DataTypes.FLOAT,
+                    field: "total_pay",
+                },
+                createdAt: {
+                    allowNull: false,
+                    type: DataTypes.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "created_at",
+                },
+                updatedAt: {
+                    allowNull: false,
+                    type: DataTypes.DATE,
+                    defaultValue: DataTypes.NOW,
+                    field: "updated_at",
+                },
+            },
+            {
+                indexes: [{fields: ["billing_type", "accommodation_id", "status", "createdAt"]}],
             }
         );
     },
 
-    async down(queryInterface, Sequelize) {
+    async down(queryInterface) {
         await queryInterface.dropAllTables();
         await queryInterface.removeIndex("users", ["username", "email"]);
+        await queryInterface.removeIndex("zones", ["name"]);
+        await queryInterface.removeIndex("water_zones", ["zone_id", "name"]);
+        await queryInterface.removeIndex("buildings", ["zone_id", "water_zone_id", "name"]);
         await queryInterface.removeIndex("rooms", [
             "roomNo",
             "electricityNo",
@@ -432,6 +492,8 @@ module.exports = {
             "waterNo",
             "waterMeterNo",
         ]);
+        await queryInterface.removeIndex("accommodations", ["room_id", "user_id", "host"]);
+        await queryInterface.removeIndex("billings", ["billing_type", "accommodation_id", "status", "createdAt"]);
         await queryInterface.dropAllEnums();
     },
 };
