@@ -1,8 +1,10 @@
-const {DataTypes, Deferrable} = require("sequelize");
+const { DataTypes, Deferrable } = require("sequelize");
 
 module.exports = {
     async up(queryInterface) {
-        await queryInterface.createTable("users", {
+        await queryInterface.createTable(
+            "users",
+            {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -36,6 +38,8 @@ module.exports = {
                     type: DataTypes.ENUM,
                     values: [
                         "n/a",
+                        "พล.ต.อ.",
+                        "พล.ต.ท.",
                         "พล.ต.ต.",
                         "พ.ต.อ.",
                         "พ.ต.ท.",
@@ -116,10 +120,12 @@ module.exports = {
                 },
             },
             {
-                indexes: [{unique: true, fields: ["username", "email"]}],
+                indexes: [{ unique: true, fields: ["username", "email"] }],
             }
         );
-        await queryInterface.createTable("zones", {
+        await queryInterface.createTable(
+            "zones",
+            {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -149,10 +155,12 @@ module.exports = {
                 },
             },
             {
-                indexes: [{fields: ["name"]}],
+                indexes: [{ fields: ["name"] }],
             }
         );
-        await queryInterface.createTable("water_zones", {
+        await queryInterface.createTable(
+            "water_zones",
+            {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -167,10 +175,10 @@ module.exports = {
                     defaultValue: DataTypes.UUIDV4,
                     field: "zone_id",
                     references: {
-                        model: 'zones',
-                        key: 'id',
-                        deferrable: Deferrable.INITIALLY_IMMEDIATE
-                    }
+                        model: "zones",
+                        key: "id",
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+                    },
                 },
                 name: {
                     unique: true,
@@ -192,10 +200,12 @@ module.exports = {
                 },
             },
             {
-                indexes: [{fields: ["zone_id", "name"]}],
+                indexes: [{ fields: ["zone_id", "name"] }],
             }
         );
-        await queryInterface.createTable("buildings", {
+        await queryInterface.createTable(
+            "buildings",
+            {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -210,20 +220,20 @@ module.exports = {
                     defaultValue: DataTypes.UUIDV4,
                     field: "zone_id",
                     references: {
-                        model: 'zones',
-                        key: 'id',
-                        deferrable: Deferrable.INITIALLY_IMMEDIATE
-                    }
+                        model: "zones",
+                        key: "id",
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+                    },
                 },
                 waterZoneId: {
                     type: DataTypes.UUID,
                     defaultValue: DataTypes.UUIDV4,
                     field: "water_zone_id",
                     references: {
-                        model: 'water_zones',
-                        key: 'id',
-                        deferrable: Deferrable.INITIALLY_IMMEDIATE
-                    }
+                        model: "water_zones",
+                        key: "id",
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+                    },
                 },
                 name: {
                     type: DataTypes.STRING,
@@ -257,10 +267,12 @@ module.exports = {
                 },
             },
             {
-                indexes: [{fields: ["zone_id", "water_zone_id", "name"]}],
+                indexes: [{ fields: ["zone_id", "water_zone_id", "name"] }],
             }
         );
-        await queryInterface.createTable("rooms", {
+        await queryInterface.createTable(
+            "rooms",
+            {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -275,30 +287,30 @@ module.exports = {
                     defaultValue: DataTypes.UUIDV4,
                     field: "zone_id",
                     references: {
-                        model: 'zones',
-                        key: 'id',
-                        deferrable: Deferrable.INITIALLY_IMMEDIATE
-                    }
+                        model: "zones",
+                        key: "id",
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+                    },
                 },
                 waterZoneId: {
                     type: DataTypes.UUID,
                     defaultValue: DataTypes.UUIDV4,
                     field: "water_zone_id",
                     references: {
-                        model: 'water_zones',
-                        key: 'id',
-                        deferrable: Deferrable.INITIALLY_IMMEDIATE
-                    }
+                        model: "water_zones",
+                        key: "id",
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+                    },
                 },
                 buildingId: {
                     type: DataTypes.UUID,
                     defaultValue: DataTypes.UUIDV4,
                     field: "building_id",
                     references: {
-                        model: 'buildings',
-                        key: 'id',
-                        deferrable: Deferrable.INITIALLY_IMMEDIATE
-                    }
+                        model: "buildings",
+                        key: "id",
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+                    },
                 },
                 roomNo: {
                     type: DataTypes.STRING,
@@ -349,14 +361,28 @@ module.exports = {
                 },
             },
             {
-                indexes: [{
-                    unique: true,
-                    fields: ["zone_id", "water_zone_id", "building_id", "room_no", "room_type", "electricity_no",
-                        "electricity_meter_no", "water_no", "water_meter_no", "status"]
-                }],
+                indexes: [
+                    {
+                        unique: true,
+                        fields: [
+                            "zone_id",
+                            "water_zone_id",
+                            "building_id",
+                            "room_no",
+                            "room_type",
+                            "electricity_no",
+                            "electricity_meter_no",
+                            "water_no",
+                            "water_meter_no",
+                            "status",
+                        ],
+                    },
+                ],
             }
         );
-        await queryInterface.createTable("accommodations", {
+        await queryInterface.createTable(
+            "accommodations",
+            {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -371,20 +397,20 @@ module.exports = {
                     defaultValue: DataTypes.UUIDV4,
                     field: "room_id",
                     references: {
-                        model: 'rooms',
-                        key: 'id',
-                        deferrable: Deferrable.INITIALLY_IMMEDIATE
-                    }
+                        model: "rooms",
+                        key: "id",
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+                    },
                 },
                 userId: {
                     type: DataTypes.UUID,
                     defaultValue: DataTypes.UUIDV4,
                     field: "user_id",
                     references: {
-                        model: 'users',
-                        key: 'id',
-                        deferrable: Deferrable.INITIALLY_IMMEDIATE
-                    }
+                        model: "users",
+                        key: "id",
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+                    },
                 },
                 host: {
                     type: DataTypes.BOOLEAN,
@@ -408,10 +434,12 @@ module.exports = {
                 },
             },
             {
-                indexes: [{fields: ["room_id", "user_id", "host"]}],
+                indexes: [{ fields: ["room_id", "user_id", "host"] }],
             }
         );
-        await queryInterface.createTable("billings", {
+        await queryInterface.createTable(
+            "billings",
+            {
                 id: {
                     unique: true,
                     allowNull: false,
@@ -433,10 +461,10 @@ module.exports = {
                     field: "accommodation_id",
                     comment: "ไอดีของตาราง accommodation ที่เป็นคีย์นอก",
                     references: {
-                        model: 'accommodations',
-                        key: 'id',
-                        deferrable: Deferrable.INITIALLY_IMMEDIATE
-                    }
+                        model: "accommodations",
+                        key: "id",
+                        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+                    },
                 },
                 status: {
                     type: DataTypes.ENUM,
@@ -474,7 +502,7 @@ module.exports = {
                 },
             },
             {
-                indexes: [{fields: ["billing_type", "accommodation_id", "status", "created_at"]}],
+                indexes: [{ fields: ["billing_type", "accommodation_id", "status", "created_at"] }],
             }
         );
     },
