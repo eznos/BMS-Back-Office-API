@@ -54,7 +54,7 @@ module.exports = (sequelize) => {
 
 	buildings.associate = (models) => {
 		buildings.hasMany(models.rooms, {
-			foreignKey: { name: 'buildingID', field: 'building_id' },
+			foreignKey: { name: 'buildingId', field: 'building_id' },
 		});
 		buildings.belongsTo(models.zones, {
 			foreignKey: { name: 'zoneId', field: 'zone_id' },
