@@ -4,25 +4,30 @@
 
 **BMS-Back-Office-API** is an application programming interface for **Billing Management Service** project
 
-## 📦 Used packages 
+## 📦 Used packages
+
 | Name   | Version   | Type   |
-|--------|-----------|--------|
+| ------ | --------- | ------ |
 | ------ | --------- | ------ |
 
 ## ⬇️ Install packages
 
 ```shell
+
 ```
 
 ## ⚡️ Run
 
 ```shell
+
 ```
 
 ## ⚙️ Configuration
 
 ```ini
+
 ```
 
 ## 🧑‍💻 Author
+
 [Eznos](https://www.facebook.com/naymobie.dekzaloso)

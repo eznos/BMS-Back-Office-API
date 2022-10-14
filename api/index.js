@@ -1,38 +1,35 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
-const timezone = require("dayjs/plugin/timezone");
-const Routes = require("./server/routes/index");
-const cookieParser = require("cookie-parser");
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+const Routes = require('./server/routes/index');
+const cookieParser = require('cookie-parser');
 
 // * dayjs use timezone
 dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.tz.setDefault("Asia/Bangkok");
+dayjs.tz.setDefault('Asia/Bangkok');
 
 // * config server
 const app = express();
 // get db from model
-const db = require("./server/repositories/models/index");
-const { users, accommodations, billings, buildings, rooms, waterZones, zones } = db;
+const db = require('./server/repositories/models/index');
+// const { users, accommodations, billings, buildings, rooms, waterZones, zones } =
+// 	db;
 db.sequelize.sync();
 
 app.use(cors({ origin: true }));
-app.use(bodyParser.json({ limit: "1mb" }));
-app.use(bodyParser.urlencoded({ limit: "1mb", extended: false }));
+app.use(bodyParser.json({ limit: '1mb' }));
+app.use(bodyParser.urlencoded({ limit: '1mb', extended: false }));
 app.use(cookieParser());
 app.use(express.json());
 
-
 // * routes
 
-app.use("/v1", Routes);
-
-
-
+app.use('/v1', Routes);
 
 // get data via id
 // app.get("/water_zone/:id", async (req, res) => {
@@ -47,9 +44,7 @@ app.use("/v1", Routes);
 //     }
 // });
 
-
 // get data to table
-
 
 // // get all electricity billings /billings/electricity
 // app.get("/billings/electricity", async (req, res) => {
@@ -204,7 +199,6 @@ app.use("/v1", Routes);
 //     }
 // });
 
-
 // // delete
 // app.delete("/billings/:id", async (req, res) => {
 //     id = req.params.id;
@@ -250,9 +244,9 @@ app.use("/v1", Routes);
 // });
 
 // * start server
-const host = process.env.SERVER_HOST || "0.0.0.0";
+const host = process.env.SERVER_HOST || '0.0.0.0';
 const port = process.env.SERVER_PORT || 3000;
 
 app.listen(port, host, () => {
-    console.log(`API listening on ${host}:${port}`);
+	console.log(`API listening on ${host}:${port}`);
 });
