@@ -42,13 +42,13 @@ module.exports = (sequelize) => {
 
 	zones.associate = (models) => {
 		zones.hasMany(models.rooms, {
-			foreignKey: { name: 'zoneID', field: 'zone_id' },
+			foreignKey: { name: 'zoneId', field: 'zone_id' },
 		});
 		zones.hasMany(models.buildings, {
-			foreignKey: { name: 'zoneID', field: 'zone_id' },
+			foreignKey: { name: 'zoneId', field: 'zone_id' },
 		});
 		zones.hasMany(models.waterZones, {
-			foreignKey: { name: 'zoneID', field: 'zone_id' },
+			foreignKey: { name: 'zoneId', field: 'zone_id' },
 		});
 	};
 

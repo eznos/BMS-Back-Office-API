@@ -504,12 +504,7 @@ module.exports = {
 			{
 				indexes: [
 					{
-						fields: [
-							'billing_type',
-							'accommodation_id',
-							'status',
-							'created_at',
-						],
+						fields: ['billing_type', 'accommodation_id', 'status', 'created_at'],
 					},
 				],
 			}
@@ -521,11 +516,7 @@ module.exports = {
 		await queryInterface.removeIndex('users', ['username', 'email']);
 		await queryInterface.removeIndex('zones', ['name']);
 		await queryInterface.removeIndex('water_zones', ['zone_id', 'name']);
-		await queryInterface.removeIndex('buildings', [
-			'zone_id',
-			'water_zone_id',
-			'name',
-		]);
+		await queryInterface.removeIndex('buildings', ['zone_id', 'water_zone_id', 'name']);
 		await queryInterface.removeIndex('rooms', [
 			'roomNo',
 			'electricityNo',
@@ -533,17 +524,8 @@ module.exports = {
 			'waterNo',
 			'waterMeterNo',
 		]);
-		await queryInterface.removeIndex('accommodations', [
-			'room_id',
-			'user_id',
-			'host',
-		]);
-		await queryInterface.removeIndex('billings', [
-			'billing_type',
-			'accommodation_id',
-			'status',
-			'createdAt',
-		]);
+		await queryInterface.removeIndex('accommodations', ['room_id', 'user_id', 'host']);
+		await queryInterface.removeIndex('billings', ['billing_type', 'accommodation_id', 'status', 'createdAt']);
 		await queryInterface.dropAllEnums();
 	},
 };
