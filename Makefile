@@ -22,3 +22,9 @@ gen-config-dev:
 
 run-dev:
 	@npm run dev
+
+check-lint:
+	@npm run lint
+
+re-format:
+	@npm run format
