@@ -4,7 +4,7 @@
   "description": "api for billing management system",
   "main": "./api/index.js",
   "scripts": {
-      "dev": "nodemon ./api/index.js"
+    "dev": "nodemon ./api/index.js"
   },
   "repository": {
     "type": "git",
