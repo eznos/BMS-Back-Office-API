@@ -1,4 +1,3 @@
-require('dotenv').config();
 const bcrypt = require('bcrypt');
 const { Response } = require('../../utils/response.util');
 const { CustomError, HandlerError } = require('../../utils/error.util');
