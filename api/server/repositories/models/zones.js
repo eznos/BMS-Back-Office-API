@@ -38,14 +38,9 @@ module.exports = (sequelize) => {
         })
 
     zones.associate = (models) => {
-        zones.hasMany(models.waterZones, {
-            foreignKey: 'zone_id',
-            as: 'water_zones',
-            onUpdate: 'cascade',
-            sourceKey: 'id'
-        })
-        zones.hasMany(models.buildings, {foreignKey: 'zone_id', as: 'buildings', onUpdate: 'cascade', sourceKey: 'id'})
-        zones.hasMany(models.rooms, {foreignKey: 'zone_id', as: 'rooms', onUpdate: 'cascade', sourceKey: 'id'})
+        zones.hasMany(models.rooms, {foreignKey: {name: "zoneID", field: "zone_id"}})
+        zones.hasMany(models.buildings, {foreignKey: {name: "zoneID", field: "zone_id"}})
+        zones.hasMany(models.waterZones, {foreignKey: {name: "zoneID", field: "zone_id"}})
     }
 
     return zones
