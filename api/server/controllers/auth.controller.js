@@ -2,11 +2,23 @@ const bcrypt = require('bcrypt');
 const { Response } = require('../../utils/response.util');
 const { CustomError, HandlerError } = require('../../utils/error.util');
 const { SUCCESS_STATUS } = require('../../constants/http-status.constant');
-const { CREATED_CODE } = require('../../constants/http-status-code.constant');
-const { EMAIL_ALREADY_EXISTS } = require('../../constants/error-message.constant');
-const { RegisterScheme, RegisterDTO } = require('../domains/auth.domain');
+const {
+	CREATED_CODE,
+	OK_CODE,
+	NO_CONTENT_CODE,
+	UNAUTHORIZED_CODE,
+} = require('../../constants/http-status-code.constant');
+const {
+	EMAIL_ALREADY_EXISTS,
+	INVALID_REFRESH_TOKEN,
+	INVALID_RECOVERY_CODE,
+} = require('../../constants/error-message.constant');
+const { INVALID_USERNAME_OR_PASSWORD } = require('../../constants/error-message.constant');
+const { RegisterScheme, RegisterDTO, LoginScheme } = require('../domains/auth.domain');
 const { users } = require('../repositories/models');
-
+const jwt = require('jsonwebtoken');
+const OTPAuth = require('otpauth');
+const tokenList = {};
 const register = async (req, res) => {
 	try {
 		let user = await RegisterScheme.validateAsync(req.body);
@@ -22,4 +34,135 @@ const register = async (req, res) => {
 	}
 };
 
+const login = async (req, res) => {
+	try {
+		let loginData = await LoginScheme.validateAsync(req.body);
+		const user = await users.findOne({
+			where: { username: loginData.username },
+			attributes: ['id', 'username', 'password', 'role', 'rank', 'firstName', 'lastName', 'profileUrl'],
+		});
+		if (user) {
+			const hasUser = await bcrypt.compare(loginData.password, user.password);
+			if (hasUser) {
+				const tokenPayload = {
+					username: user.username,
+					role: user.role,
+				};
+				const accessToken = jwt.sign(tokenPayload, process.env.secret, { expiresIn: process.env.tokenLife });
+				const refreshToken = jwt.sign(tokenPayload, process.env.refreshTokenSecret, {
+					expiresIn: process.env.refreshTokenLife,
+				});
+				const token = {
+					access_token: accessToken,
+					refresh_token: refreshToken,
+				};
+				tokenList[refreshToken] = token;
+				console.log(tokenList);
+				return Response(res, SUCCESS_STATUS, OK_CODE, { user, token });
+			} else {
+				return HandlerError(res, CustomError(INVALID_USERNAME_OR_PASSWORD));
+			}
+		} else {
+			return HandlerError(res, CustomError(INVALID_USERNAME_OR_PASSWORD));
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
+const logout = async (req, res) => {
+	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	try {
+		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in tokenList) {
+			console.log(getRefreshTokenFromHeader in tokenList);
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
+const token = async (req, res) => {
+	let loginData = req.body;
+	if (loginData.result.token.refresh_token && loginData.result.token.refresh_token in tokenList) {
+		const user = {
+			username: loginData.username,
+			role: loginData.role,
+		};
+		const token = jwt.sign(user, process.env.secret, { expiresIn: process.env.tokenLife });
+		const response = {
+			token: token,
+		};
+		// update the token in the list
+		tokenList[loginData.result.token.refresh_token].token = token;
+		console.log(tokenList);
+		res.status(200).json(response);
+	} else {
+		res.status(404).send('Invalid request');
+	}
+};
+// OPT config
+let totp = new OTPAuth.TOTP({
+	issuer: 'ACME',
+	label: 'AzureDiamond',
+	algorithm: 'SHA1',
+	digits: 6,
+	period: 60,
+	secret: 'Eznos', // or 'OTPAuth.Secret.fromBase32("NB2W45DFOIZA")'
+});
+
+const forgetPassword = async (req, res) => {
+	const emailData = await req.params.email;
+	try {
+		const user = await users.findOne({
+			where: { email: emailData },
+			attributes: ['email'],
+		});
+		if (user) {
+			let otpCode = totp.generate();
+			console.log(otpCode);
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
+const recoveryCode = async (req, res) => {
+	const emailData = await req.params.email;
+	const otpData = await req.body.recovery_code;
+	const type = await req.body.type;
+	const password = await req.body.password;
+	try {
+		const user = await users.findOne({
+			where: { email: emailData },
+		});
+		if (user && otpData && type == 'RESET') {
+			let delta = totp.validate({
+				token: otpData,
+				window: 1,
+			});
+			if (delta == 0) {
+				const hashPassword = await bcrypt.hash(password, 10);
+				const newpassword = await users.update({ password: hashPassword }, { where: { email: emailData } });
+				if (newpassword) {
+					return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+				}
+			} else {
+				return HandlerError(res, CustomError(INVALID_RECOVERY_CODE));
+			}
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
 module.exports.Register = register;
+module.exports.Login = login;
+module.exports.Token = token;
+module.exports.Logout = logout;
+module.exports.ForgetPassword = forgetPassword;
+module.exports.RecoveryCode = recoveryCode;
+module.exports.TokenList = tokenList;
