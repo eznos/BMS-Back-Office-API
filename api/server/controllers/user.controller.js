@@ -1,7 +1,7 @@
 const { Response } = require('../../utils/response.util');
 const { SUCCESS_STATUS } = require('../../constants/http-status.constant');
 const { CustomError, HandlerError } = require('../../utils/error.util');
-const { NO_CONTENT_CODE, UNAUTHORIZED_CODE } = require('../../constants/http-status-code.constant');
+const { NO_CONTENT_CODE, UNAUTHORIZED_CODE, OK_CODE } = require('../../constants/http-status-code.constant');
 const { SOMETHING_WENT_WRONG, INVALID_REFRESH_TOKEN } = require('../../constants/error-message.constant');
 const { users } = require('../repositories/models');
 const TokenList = require('./auth.controller');
@@ -27,9 +27,9 @@ const usersList = async (req, res) => {
 				},
 			});
 			if (!user) {
-				res.status(200).json({ status: 'success', status_code: 200, result: { user_lists: user } });
+				return Response(res, SUCCESS_STATUS, OK_CODE, user);
 			} else {
-				res.status(200).json({ status: 'success', status_code: 200, result: { user_lists: user } });
+				return Response(res, SUCCESS_STATUS, OK_CODE, user);
 			}
 		} else {
 			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);

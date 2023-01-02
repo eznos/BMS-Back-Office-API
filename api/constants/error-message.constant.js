@@ -6,6 +6,7 @@ module.exports = {
 	SESSION_NOT_FOUND: 'session not found',
 	SOMETHING_WENT_WRONG: 'something went wrong',
 	EMAIL_ALREADY_EXISTS: 'this email already exists',
+	INVALID_EMAIL_CODE: 'this email is invalid',
 	VALIDATION_ERROR: 'ValidationError',
 	SEQUELIZE_VALIDATION_ERROR: 'SequelizeValidationError',
 };
