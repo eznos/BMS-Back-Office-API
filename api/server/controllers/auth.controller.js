@@ -1,17 +1,19 @@
 const bcrypt = require('bcrypt');
-const { Response } = require('../../utils/response.util');
+const { Response, LoginResponse } = require('../../utils/response.util');
 const { CustomError, HandlerError } = require('../../utils/error.util');
-const { SUCCESS_STATUS } = require('../../constants/http-status.constant');
+const { SUCCESS_STATUS, UNPROCESSABLE_ENTITY_STATUS } = require('../../constants/http-status.constant');
 const {
 	CREATED_CODE,
 	OK_CODE,
 	NO_CONTENT_CODE,
 	UNAUTHORIZED_CODE,
+	UNPROCESSABLE_ENTITY_CODE,
 } = require('../../constants/http-status-code.constant');
 const {
 	EMAIL_ALREADY_EXISTS,
 	INVALID_REFRESH_TOKEN,
 	INVALID_RECOVERY_CODE,
+	INVALID_EMAIL_CODE,
 } = require('../../constants/error-message.constant');
 const { INVALID_USERNAME_OR_PASSWORD } = require('../../constants/error-message.constant');
 const { RegisterScheme, RegisterDTO, LoginScheme } = require('../domains/auth.domain');
@@ -19,6 +21,8 @@ const { users } = require('../repositories/models');
 const jwt = require('jsonwebtoken');
 const OTPAuth = require('otpauth');
 const tokenList = {};
+const nodemailer = require('nodemailer');
+
 const register = async (req, res) => {
 	try {
 		let user = await RegisterScheme.validateAsync(req.body);
@@ -39,7 +43,17 @@ const login = async (req, res) => {
 		let loginData = await LoginScheme.validateAsync(req.body);
 		const user = await users.findOne({
 			where: { username: loginData.username },
-			attributes: ['id', 'username', 'password', 'role', 'rank', 'firstName', 'lastName', 'profileUrl'],
+			attributes: [
+				'id',
+				'username',
+				'password',
+				'role',
+				'rank',
+				'firstName',
+				'lastName',
+				'affiliation',
+				'profileUrl',
+			],
 		});
 		if (user) {
 			const hasUser = await bcrypt.compare(loginData.password, user.password);
@@ -52,13 +66,14 @@ const login = async (req, res) => {
 				const refreshToken = jwt.sign(tokenPayload, process.env.refreshTokenSecret, {
 					expiresIn: process.env.refreshTokenLife,
 				});
+				console.log(accessToken);
 				const token = {
 					access_token: accessToken,
 					refresh_token: refreshToken,
 				};
 				tokenList[refreshToken] = token;
 				console.log(tokenList);
-				return Response(res, SUCCESS_STATUS, OK_CODE, { user, token });
+				return LoginResponse(res, SUCCESS_STATUS, OK_CODE, user, token);
 			} else {
 				return HandlerError(res, CustomError(INVALID_USERNAME_OR_PASSWORD));
 			}
@@ -120,10 +135,42 @@ const forgetPassword = async (req, res) => {
 			where: { email: emailData },
 			attributes: ['email'],
 		});
+		// console.log(user);
 		if (user) {
 			let otpCode = totp.generate();
+			const transporter = nodemailer.createTransport({
+				service: 'hotmail',
+				auth: {
+					user: process.env.EZNOS_MAIL, // your email
+					pass: process.env.EZNOS_PASSWORD, // your password
+				},
+			});
+			// setup email data with unicode symbols
+			const mailOptions = {
+				from: process.env.EZNOS_MAIL, // sender
+				to: emailData, // list of receivers
+				subject: 'ทดสอบการส่งรหัส OTP ', // Mail subject
+				html:
+					'<!DOCTYPE html>' +
+					'<html><head><title>Test OTP Send to Email</title>' +
+					'</head><body><div>' +
+					'<img src="https://www.techhub.in.th/wp-content/uploads/2021/05/118283916_b19c5a1f-162b-410b-8169-f58f0d153752.jpg" alt="" width="160">' +
+					'<p>รหัส OTP สำหรับใช้ในการลืมรหัสผ่าน</p>' +
+					'<br></br>' +
+					otpCode +
+					'<br></br>' +
+					'</div></body></html>'`sdfef`,
+			};
+			// send mail with defined transport object
+			transporter.sendMail(mailOptions, function (err, info) {
+				if (err) console.log(err);
+				else console.log(info);
+				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+			});
 			console.log(otpCode);
 			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			return Response(res, UNPROCESSABLE_ENTITY_STATUS, INVALID_EMAIL_CODE);
 		}
 	} catch (err) {
 		return HandlerError(res, err);
@@ -148,7 +195,7 @@ const recoveryCode = async (req, res) => {
 				const hashPassword = await bcrypt.hash(password, 10);
 				const newpassword = await users.update({ password: hashPassword }, { where: { email: emailData } });
 				if (newpassword) {
-					return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+					return Response(res, SUCCESS_STATUS, UNPROCESSABLE_ENTITY_CODE);
 				}
 			} else {
 				return HandlerError(res, CustomError(INVALID_RECOVERY_CODE));
