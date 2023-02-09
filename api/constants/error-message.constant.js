@@ -9,4 +9,5 @@ module.exports = {
 	INVALID_EMAIL_CODE: 'this email is invalid',
 	VALIDATION_ERROR: 'ValidationError',
 	SEQUELIZE_VALIDATION_ERROR: 'SequelizeValidationError',
+	INVALID_ROOM_NO: 'invalid room number',
 };

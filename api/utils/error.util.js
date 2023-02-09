@@ -19,6 +19,7 @@ const {
 	INVALID_RECOVERY_CODE,
 	SEQUELIZE_VALIDATION_ERROR,
 	INVALID_USERNAME_OR_PASSWORD,
+	INVALID_ROOM_NO,
 } = require('../constants/error-message.constant');
 
 const customError = (name = '', message = '') => {
@@ -41,6 +42,8 @@ const handlerError = (res, err) => {
 			return Response(res, INTERNAL_SERVER_ERROR_STATUS, INTERNAL_SERVER_ERROR_CODE, null, err.message);
 		case INVALID_RECOVERY_CODE:
 			return Response(res, UNPROCESSABLE_ENTITY_STATUS, UNPROCESSABLE_ENTITY_CODE, null, INVALID_RECOVERY_CODE);
+		case INVALID_ROOM_NO:
+			return Response(res, UNAUTHORIZED_STATUS, UNAUTHORIZED_CODE, null, INVALID_ROOM_NO);
 		default:
 			return Response(res, INTERNAL_SERVER_ERROR_STATUS, INTERNAL_SERVER_ERROR_CODE, null, SOMETHING_WENT_WRONG);
 	}
