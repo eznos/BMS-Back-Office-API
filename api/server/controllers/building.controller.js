@@ -4,7 +4,7 @@ const { SUCCESS_STATUS } = require('../../constants/http-status.constant');
 const { NO_CONTENT_CODE, UNAUTHORIZED_CODE, OK_CODE } = require('../../constants/http-status-code.constant');
 const { SOMETHING_WENT_WRONG, INVALID_REFRESH_TOKEN } = require('../../constants/error-message.constant');
 const { rooms, zones, buildings, waterZones, accommodations } = require('../repositories/models');
-const { CreateRoomScheme, CreateRoomDTO, UpdateRoomScheme, UpdateRoomDTO } = require('../domains/building.domain');
+const { UpdateRoomScheme, UpdateRoomDTO } = require('../domains/building.domain');
 const TokenList = require('./auth.controller');
 const building = async (req, res) => {
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
@@ -49,29 +49,17 @@ const building = async (req, res) => {
 
 const createRoom = async (req, res) => {
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
-	const room = await CreateRoomScheme.validateAsync(req.body);
+	const room = await req.body;
 	try {
-		const findZone = await zones.findOne({
-			where: {
-				id: room.zoneId,
-			},
-		});
-		const findWaterZone = await waterZones.findOne({
-			where: {
-				id: room.waterZoneId,
-			},
-		});
-		const findbuilding = await buildings.findOne({
-			where: {
-				id: room.buildingId,
-			},
-		});
+		const findZone = await zones.findOne({ where: { id: room.zoneId } });
+		const findWaterZone = await waterZones.findOne({ where: { id: room.waterZoneId } });
+		const findbuilding = await buildings.findOne({ where: { id: room.buildingId } });
 		if (!findZone || !findWaterZone || !findbuilding) {
 			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 		}
 		if (findZone && findWaterZone && findbuilding) {
 			if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
-				const newRoom = await rooms.create(CreateRoomDTO(room));
+				const newRoom = await rooms.create(room);
 				if (newRoom) {
 					return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 				} else {
@@ -100,7 +88,6 @@ const deleteRoom = async (req, res) => {
 				await accommodations.update({ deleted: true }, { where: { room_id: id } });
 				await accommodations.update({ host: false }, { where: { room_id: id } });
 				rooms.destroy({ where: { id: id } });
-				console.log(accommodation);
 				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 			}
 			if (room && !accommodation) {
@@ -131,11 +118,11 @@ const updateRoom = async (req, res) => {
 				await rooms.update({ waterZoneId: UpdateRoomDTO(data).waterZoneId }, { where: { id: id } });
 				await rooms.update({ buildingId: UpdateRoomDTO(data).buildingId }, { where: { id: id } });
 				await rooms.update({ roomNo: UpdateRoomDTO(data).roomNo }, { where: { id: id } });
-				await rooms.update({ electricityNo: UpdateRoomDTO(data).electricityNo }, { where: { id: id } });
-				await rooms.update(
-					{ electricityMeterNo: UpdateRoomDTO(data).electricityMeterNo },
-					{ where: { id: id } }
-				);
+				// await rooms.update({ electricityNo: UpdateRoomDTO(data).electricityNo }, { where: { id: id } });
+				// await rooms.update(
+				// 	{ electricityMeterNo: UpdateRoomDTO(data).electricityMeterNo },
+				// 	{ where: { id: id } }
+				// );
 				await rooms.update({ waterNo: UpdateRoomDTO(data).waterNo }, { where: { id: id } });
 				await rooms.update({ waterMeterNo: UpdateRoomDTO(data).waterMeterNo }, { where: { id: id } });
 				await rooms.update({ roomType: UpdateRoomDTO(data).roomType }, { where: { id: id } });
@@ -172,7 +159,7 @@ const createZone = async (req, res) => {
 		});
 		// not create
 		if (zone && waterZone && building) {
-			return Response(res, SUCCESS_STATUS, OK_CODE, zone);
+			return Response(res, SUCCESS_STATUS, OK_CODE, 'gg');
 		}
 		// create a new zone and water zone
 		else if (!!zone && !!waterZone && building) {
@@ -209,43 +196,12 @@ const createZone = async (req, res) => {
 				},
 			});
 			if (zone) {
-				await waterZones.create({
-					name: data.waterZoneName,
-				});
-
-				await waterZones.update(
-					{
-						zoneId: zone.id,
-					},
-					{ where: { name: data.waterZoneName } }
-				);
-
-				const waterZone = await waterZones.findOne({
-					name: data.waterZoneName,
-				});
-
-				await buildings.create({
-					name: data.buildingName,
-					lat: data.lat,
-					lng: data.lng,
-				});
-
-				await buildings.update(
-					{
-						zoneId: zone.id,
-					},
-					{ where: { name: data.buildingName } }
-				);
-
-				await buildings.update(
-					{
-						waterZoneId: waterZone.id,
-					},
-					{
-						where: { name: data.buildingName },
-					}
-				);
-
+				await waterZones.create({ name: data.waterZoneName });
+				await waterZones.update({ zoneId: zone.id }, { where: { name: data.waterZoneName } });
+				const waterZone = await waterZones.findOne({ name: data.waterZoneName });
+				await buildings.create({ name: data.buildingName, lat: data.lat, lng: data.lng });
+				await buildings.update({ zoneId: zone.id }, { where: { name: data.buildingName } });
+				await buildings.update({ waterZoneId: waterZone.id }, { where: { name: data.buildingName } });
 				return Response(res, SUCCESS_STATUS, OK_CODE, 'ez');
 			}
 		}
