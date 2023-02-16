@@ -21,7 +21,7 @@ const registerDTO = (req) => {
 		firstName: req.first_name,
 		lastName: req.last_name,
 		email: req.email,
-		phoneNumber: req.phoneNumber || null,
+		phoneNumber: req.phone_number || null,
 		gender: req.gender || null,
 		username: req.username,
 		password: req.password,
