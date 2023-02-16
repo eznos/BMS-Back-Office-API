@@ -40,7 +40,7 @@ const usersList = async (req, res) => {
 };
 
 const editUser = async (req, res) => {
-	const id = await req.query.user_id;
+	const id = await req.query.id;
 	const email = await req.body.email;
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
@@ -61,27 +61,67 @@ const editUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-	const id = await [req.query.users_id];
+	const id = await req.body.id;
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
 		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
-			const findUser = await users.findAll({ where: { id: [id] } });
+			const findUser = await users.findAll({ where: { id: id } });
+			console.log(findUser);
 			if (findUser) {
-				const softDelete = await users.update({ deleted: true }, { where: { id: [id] } });
+				const softDelete = await users.update({ deleted: true }, { where: { id: id } });
 				if (!softDelete) {
 					return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 				} else {
 					return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 				}
 			} else {
-				return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+				return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 			}
+		} else {
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
 		}
 	} catch (err) {
 		return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 	}
 };
 
+const editUserInfo = async (req, res) => {
+	const user = await req.body;
+	const id = await req.query.id;
+	return Response(res, SUCCESS_STATUS, OK_CODE, { user, id });
+	// const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	// try {
+	// 	if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+	// 		const user = await users.findAll({
+	// 			attributes: [
+	// 				'id',
+	// 				'role',
+	// 				'rank',
+	// 				'affiliation',
+	// 				'firstName',
+	// 				'lastName',
+	// 				'gender',
+	// 				'email',
+	// 				'phoneNumber',
+	// 			],
+	// 			where: {
+	// 				deleted: 'false',
+	// 			},
+	// 		});
+	// 		if (!user) {
+	// 			return Response(res, SUCCESS_STATUS, OK_CODE, user);
+	// 		} else {
+	// 			return Response(res, SUCCESS_STATUS, OK_CODE, user);
+	// 		}
+	// 	} else {
+	// 		return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+	// 	}
+	// } catch (err) {
+	// 	return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+	// }
+};
+
 module.exports.UsersList = usersList;
 module.exports.EditUser = editUser;
 module.exports.DeleteUser = deleteUser;
+module.exports.EditUserInfo = editUserInfo;
