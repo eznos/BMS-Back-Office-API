@@ -1,4 +1,3 @@
-const db = require('../repositories/models/index.js');
 const { Response } = require('../../utils/response.util');
 const { CustomError, HandlerError } = require('../../utils/error.util');
 const { SUCCESS_STATUS } = require('../../constants/http-status.constant');
@@ -6,10 +5,10 @@ const { NO_CONTENT_CODE, OK_CODE, UNAUTHORIZED_CODE } = require('../../constants
 const { SOMETHING_WENT_WRONG, INVALID_REFRESH_TOKEN } = require('../../constants/error-message.constant');
 const { users, accommodations, billings, rooms, zones, waterZones, buildings } = require('../repositories/models');
 const TokenList = require('./auth.controller');
-const { Op, Sequelize } = require('sequelize');
-
+const { Op } = require('sequelize');
+const xl = require('excel4node');
+const wb = new xl.Workbook();
 const water = async (req, res) => {
-	// const date = req.query.date;
 	var now = new Date();
 	var startDate = new Date(now.getFullYear() + 0, 1, 1);
 	var endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -437,51 +436,1165 @@ const exportWaterBills = async (req, res) => {
 				{ status: 'exported' },
 				{ where: { accommodationId: accommodationsIds, updatedAt: { [Op.between]: [startDate, endDate] } } }
 			);
-			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+			const dataToExport = await users.findAll({
+				where: { id: id, deleted: false },
+				include: [
+					{
+						model: accommodations,
+						attributes: ['id', 'host'],
+						where: { userId: id, host: true, deleted: false },
+						include: [
+							{
+								model: billings,
+								attributes: [
+									'id',
+									'billing_type',
+									'status',
+									'unit',
+									'price',
+									'priceDiff',
+									'totalPay',
+									'createdAt',
+									'updatedAt',
+								],
+								where: {
+									billing_type: 'water',
+									updated_at: { [Op.between]: [startDate, endDate] },
+								},
+							},
+							{
+								model: rooms,
+								attributes: [
+									'id',
+									'building_id',
+									'roomNo',
+									'roomType',
+									'waterNo',
+									'waterMeterNo',
+									'status',
+								],
+								include: [
+									{
+										model: zones,
+										attributes: ['id', 'name'],
+									},
+									{
+										model: waterZones,
+										attributes: ['id', 'name'],
+									},
+									{
+										model: buildings,
+										attributes: ['id', 'name'],
+									},
+								],
+							},
+						],
+					},
+				],
+				attributes: ['id', 'rank', 'affiliation', 'firstName', 'lastName'],
+			});
+
+			const ws = wb.addWorksheet('Data', {
+				disableRowSpansOptimization: true,
+			});
+			// header satart
+			const headerRows = 3;
+			ws.cell(headerRows, 1)
+				.string('ลำดับ')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 2)
+				.string('id')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 3)
+				.string('ยศ')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 4)
+				.string('สังกัด')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 5)
+				.string('ชื่อ')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 6)
+				.string('นามสกุล')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 7)
+				.string('พื้นที่')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 8)
+				.string('สายของมิเตอร์')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 9)
+				.string('อาคาร')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 10)
+				.string('เลขห้องพัก')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 11)
+				.string('เลขผู้ใช้น้ำ')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 12)
+				.string('เลขมิเตอร์น้ำ')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 13)
+				.string('รอบบิล')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 14)
+				.string('จำนวนหน่วย')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 15)
+				.string('ค่าน้ำ')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 16)
+				.string('ค่าน้ำส่วนต่าง')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 17)
+				.string('ค่าน้ำรวม')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 18)
+				.string('สถานะ')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			// end header
+			// start data
+			const startRow = 4;
+			if (dataToExport.length) {
+				dataToExport.forEach((item, i) => {
+					const currentRow = i + startRow;
+					ws.cell(currentRow, 1)
+						.number(i + 1)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 2)
+						.string(item.id)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 3)
+						.string(item.rank)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 4)
+						.string(item.affiliation)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 5)
+						.string(item.firstName)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 6)
+						.string(item.lastName)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 7)
+						.string(item.accommodations[0].room.zone.name)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 8)
+						.string(item.accommodations[0].room.waterZone.name)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 9)
+						.string(item.accommodations[0].room.building.name)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 10)
+						.string(item.accommodations[0].room.roomNo)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 11)
+						.string(item.accommodations[0].room.waterNo)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 12)
+						.string(item.accommodations[0].room.waterMeterNo)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 13)
+						.date(item.accommodations[0].billings[0].createdAt)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 14)
+						.number(item.accommodations[0].billings[0].unit)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 15)
+						.number(item.accommodations[0].billings[0].price)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 16)
+						.number(item.accommodations[0].billings[0].priceDiff)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 17)
+						.number(item.accommodations[0].billings[0].totalPay)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 18)
+						.string(item.accommodations[0].billings[0].status)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['left'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+				});
+			}
+			// end data
+			await wb.write('Water-Bills-Data-Export.xlsx');
 		} else {
 			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 		}
 	} else {
 		return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
 	}
-};
-
-const testNewWaterBills = async (req, res) => {
-	// const billing = await users.findAll({
-	// 	include: [{
-	// 		model: accommodations, attributes: ['id', 'host'], where: { deleted: 'false', },
-	// 		include: [{
-	// 			model: billings, attributes: ['id', 'billing_type', 'status', 'unit', 'price', 'price_diff', 'total_pay', 'created_at', 'updated_at',],
-	// 			where: { billing_type: 'water' },
-	// 		},
-	// 		{
-	// 			model: rooms, attributes: ['id', 'building_id', 'roomNo', 'roomType', 'waterNo', 'waterMeterNo', 'status',],
-	// 			include: [
-	// 				{ model: zones, attributes: ['id', 'name'], },
-	// 				{ model: waterZones, attributes: ['id', 'name'], },
-	// 				{ model: buildings, attributes: ['id', 'name'], },
-	// 			],
-	// 		},
-	// 		],
-	// 	},
-	// 	],
-	// 	attributes: ['id', 'rank', 'affiliation', 'firstName', 'lastName'],
-	// });
-	const data = await db.sequelize.query(
-		'SELECT * FROM User INNER JOIN Accommodations ON Accommodations.user_id = Accommodations.id',
-		{
-			replacements: ['active'],
-			type: Sequelize.QueryTypes.SELECT,
-		}
-	);
-	// const user = await users.findAll({ where: { deleted: false }, attributes: ['id', 'firstName', 'lastName'] })
-	// const userIds = [];
-	// for (let i = 0; i < user.length; i++) {
-	// 	userIds.push(user[i].id);
-	// }
-	// const accommodation = await accommodations.findAll({ where: { user_id: userIds, host: true, deleted: false }, attributes: ['id', 'room_id'] })
-
-	return Response(res, SUCCESS_STATUS, OK_CODE, { billings: data });
 };
 
 module.exports.Water = water;
@@ -492,4 +1605,4 @@ module.exports.UpdeteEletric = updeteEletric;
 module.exports.History = history;
 module.exports.DifferencePrice = differencePrice;
 module.exports.ExportWaterBills = exportWaterBills;
-module.exports.TestNewWaterBills = testNewWaterBills;
+module.exports.Wb = wb;
