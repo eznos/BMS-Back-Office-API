@@ -57,7 +57,13 @@ const login = async (req, res) => {
 		});
 		if (user) {
 			const hasUser = await bcrypt.compare(loginData.password, user.password);
-			if (hasUser) {
+			if (user.role === 'user' && hasUser) {
+				console.log('user');
+				console.log(user);
+				return LoginResponse(res, SUCCESS_STATUS, OK_CODE, user);
+			}
+			if (user.role === 'admin' && hasUser) {
+				console.log('admin');
 				const tokenPayload = {
 					username: user.username,
 					role: user.role,
@@ -66,13 +72,11 @@ const login = async (req, res) => {
 				const refreshToken = jwt.sign(tokenPayload, process.env.refreshTokenSecret, {
 					expiresIn: process.env.refreshTokenLife,
 				});
-				console.log(accessToken);
 				const token = {
 					access_token: accessToken,
 					refresh_token: refreshToken,
 				};
 				tokenList[refreshToken] = token;
-				console.log(tokenList);
 				return LoginResponse(res, SUCCESS_STATUS, OK_CODE, user, token);
 			} else {
 				return HandlerError(res, CustomError(INVALID_USERNAME_OR_PASSWORD));

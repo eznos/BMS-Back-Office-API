@@ -2,10 +2,18 @@ const { Response } = require('../../utils/response.util');
 const { CustomError, HandlerError } = require('../../utils/error.util');
 const { SUCCESS_STATUS } = require('../../constants/http-status.constant');
 const { NO_CONTENT_CODE, UNAUTHORIZED_CODE, OK_CODE } = require('../../constants/http-status-code.constant');
-const { SOMETHING_WENT_WRONG, INVALID_REFRESH_TOKEN } = require('../../constants/error-message.constant');
+const {
+	SOMETHING_WENT_WRONG,
+	INVALID_REFRESH_TOKEN,
+	ZONE_ALREADY_EXISTS,
+	WATER_ZONE_ALREADY_EXISTS,
+} = require('../../constants/error-message.constant');
 const { rooms, zones, buildings, waterZones, accommodations } = require('../repositories/models');
 const { UpdateRoomScheme, UpdateRoomDTO } = require('../domains/building.domain');
 const TokenList = require('./auth.controller');
+const xl = require('excel4node');
+const wb = new xl.Workbook();
+var fs = require('fs');
 const building = async (req, res) => {
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
@@ -139,79 +147,779 @@ const updateRoom = async (req, res) => {
 	}
 };
 
-const createZone = async (req, res) => {
-	let data = await req.body;
-	try {
-		const zone = await zones.findOne({
-			where: {
-				name: data.zoneName,
+const exportBuildings = async (req, res) => {
+	const id = req.body.id;
+	// const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+	const room = await rooms.findAll({
+		where: {
+			id: id,
+		},
+		include: [
+			{
+				model: zones,
 			},
-		});
-		const waterZone = await waterZones.findOne({
-			where: {
-				name: data.waterZoneName,
+			{
+				model: waterZones,
 			},
-		});
-		const building = await buildings.findOne({
-			where: {
-				name: data.buildingName,
+			{
+				model: buildings,
 			},
-		});
-		// not create
-		if (zone && waterZone && building) {
-			return Response(res, SUCCESS_STATUS, OK_CODE, 'gg');
-		}
-		// create a new zone and water zone
-		else if (!!zone && !!waterZone && building) {
-			return Response(res, SUCCESS_STATUS, OK_CODE, 'Eznos');
-		}
-		// create a new zone and building
-		else if (!!zone && waterZone && !!building) {
-			return Response(res, SUCCESS_STATUS, OK_CODE, 'Eznos');
-		}
-		// create a new zone
-		else if (!!zone && waterZone && building) {
-			return Response(res, SUCCESS_STATUS, OK_CODE, 'Eznos');
-		}
-		// create a new water zone and building
-		else if (zone && !!waterZone && !!building) {
-			return Response(res, SUCCESS_STATUS, OK_CODE, 'Eznos');
-		}
-		// create a new water zone
-		else if (zone && !!waterZone && building) {
-			return Response(res, SUCCESS_STATUS, OK_CODE, 'Eznos');
-		}
-		// create a new building
-		else if (zone && waterZone && !!building) {
-			return Response(res, SUCCESS_STATUS, OK_CODE, 'Eznos');
-		}
-		// create all
-		else if (!!zone && !!waterZone && !!building) {
-			await zones.create({
-				name: data.zoneName,
-			});
-			const zone = await zones.findOne({
-				where: {
-					name: data.zoneName,
+		],
+		attributes: [
+			'id',
+			'building_id',
+			'roomNo',
+			'roomType',
+			'waterNo',
+			'waterMeterNo',
+			'electricityNo',
+			'electricityMeterNo',
+			'status',
+		],
+	});
+
+	// if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+	if (room) {
+		const ws = wb.addWorksheet('Data');
+		const headerRows = 3;
+		ws.cell(headerRows, 1)
+			.string('ลำดับ')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
 				},
 			});
-			if (zone) {
-				await waterZones.create({ name: data.waterZoneName });
-				await waterZones.update({ zoneId: zone.id }, { where: { name: data.waterZoneName } });
-				const waterZone = await waterZones.findOne({ name: data.waterZoneName });
-				await buildings.create({ name: data.buildingName, lat: data.lat, lng: data.lng });
-				await buildings.update({ zoneId: zone.id }, { where: { name: data.buildingName } });
-				await buildings.update({ waterZoneId: waterZone.id }, { where: { name: data.buildingName } });
-				return Response(res, SUCCESS_STATUS, OK_CODE, 'ez');
+		ws.cell(headerRows, 2)
+			.string('สายมิเตอร์')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
+				},
+			});
+		ws.cell(headerRows, 3)
+			.string('พื้นที่')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
+				},
+			});
+		ws.cell(headerRows, 4)
+			.string('อาคาร')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
+				},
+			});
+		ws.cell(headerRows, 5)
+			.string('เลขห้องพัก')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
+				},
+			});
+		ws.cell(headerRows, 6)
+			.string('เลขผู้ใช้น้ำ')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
+				},
+			});
+		ws.cell(headerRows, 7)
+			.string('เลขมิเตอร์น้ำ')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
+				},
+			});
+		ws.cell(headerRows, 8)
+			.string('ประเภทห้องพัก')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
+				},
+			});
+		ws.cell(headerRows, 9)
+			.string('สถานะ')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
+				},
+			});
+
+		ws.cell(4, 13)
+			.string('not_empty = ห้องไม่ว่าง')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
+				},
+			});
+		ws.cell(5, 13)
+			.string('empty = ห้องว่าง')
+			.style({
+				alignment: {
+					vertical: ['center'],
+					horizontal: ['left'],
+				},
+				font: {
+					color: '000000',
+					size: 12,
+				},
+				border: {
+					bottom: {
+						style: 'thin',
+						color: '000000',
+					},
+					right: {
+						style: 'thin',
+						color: '000000',
+					},
+					left: {
+						style: 'thin',
+						color: '000000',
+					},
+					top: {
+						style: 'thin',
+						color: '000000',
+					},
+				},
+			});
+		await delay(500);
+		const startRow = 4;
+		if (room.length) {
+			room.forEach((item, i) => {
+				const currentRow = i + startRow;
+				ws.cell(currentRow, 1)
+					.number(i + 1)
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(currentRow, 2)
+					.string(item.waterZone.name)
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(currentRow, 3)
+					.string(item.zone.name)
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(currentRow, 4)
+					.string(item.building.name)
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(currentRow, 5)
+					.string(item.roomNo)
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(currentRow, 6)
+					.string(item.waterNo)
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(currentRow, 7)
+					.string(item.waterMeterNo)
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(currentRow, 8)
+					.string(item.roomType)
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(currentRow, 9)
+					.string(item.status)
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+			});
+		}
+		// end data
+		await wb.write('Buildings-Data-Export.xlsx');
+		await delay(2000);
+		await res.download(
+			'/home/eznos/Desktop/BMS-Back-Office-API/Buildings-Data-Export.xlsx',
+			'Buildings-Data-Export.xlsx',
+			function (err) {
+				if (err) {
+					console.log(err);
+				} else {
+					console.log('GGG');
+				}
 			}
+		);
+		await delay(3000);
+		var filePath = '/home/eznos/Desktop/BMS-Back-Office-API/Buildings-Data-Export.xlsx';
+		fs.unlinkSync(filePath);
+	}
+	// }
+	// else {
+	// 	return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+	// }
+};
+
+const getZonesData = async (req, res) => {
+	const zone = await zones.findAll({ attributes: ['id', 'name'] });
+	return Response(res, SUCCESS_STATUS, OK_CODE, zone);
+};
+
+const getWaterZonesData = async (req, res) => {
+	const waterZone = await waterZones.findAll({ attributes: ['id', 'name'] });
+	return Response(res, SUCCESS_STATUS, OK_CODE, waterZone);
+};
+
+const getBuildingsData = async (req, res) => {
+	const building = await buildings.findAll({ attributes: ['id', 'name'] });
+	return Response(res, SUCCESS_STATUS, OK_CODE, building);
+};
+
+const getRoomsData = async (req, res) => {
+	const room = await rooms.findAll({ attributes: ['roomNo'] });
+	return Response(res, SUCCESS_STATUS, OK_CODE, room);
+};
+
+const createZone = async (req, res) => {
+	const name = await req.body.name;
+	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	try {
+		// create all
+		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+			const zone = await zones.findOne({ where: { name: name } });
+			if (zone) {
+				return HandlerError(res, CustomError(ZONE_ALREADY_EXISTS));
+			} else {
+				await zones.create({ name: name });
+				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+			}
+		} else {
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
 		}
 	} catch (err) {
 		return HandlerError(res, err);
 	}
 };
+const createWaterZone = async (req, res) => {
+	const zoneId = req.body.zoneId;
+	const name = req.body.name;
+	// const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	try {
+		// create all
+		// if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+		const waterZone = await waterZones.findOne({ where: { name: name } });
+		const zone = await zones.findOne({ where: { id: zoneId } });
 
+		if (waterZone && !zone) {
+			console.log(1);
+			return HandlerError(res, CustomError(WATER_ZONE_ALREADY_EXISTS));
+		} else {
+			await waterZones.create({ zoneId: zoneId, name: name });
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		}
+		// } else {
+		// 	return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+		// }
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+const createBuilding = async (req, res) => {
+	const zoneId = req.body.zoneId;
+	const waterZoneId = req.body.waterZoneId;
+	const name = await req.body.name;
+	const lat = await req.body.lat;
+	const lng = await req.body.lng;
+	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	try {
+		// create all
+		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+			const building = await buildings.findOne({ where: { name: name } });
+			const zone = await zones.findOne({ where: { id: zoneId } });
+			const waterZone = await waterZones.findOne({ where: { id: waterZoneId } });
+			if (building || !zone || !waterZone) {
+				return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+			} else {
+				await buildings.create({
+					zoneId: zoneId,
+					waterZoneId: waterZoneId,
+					name: name,
+					lat: lat,
+					lng: lng,
+				});
+				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+			}
+		} else {
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
 module.exports.Building = building;
 module.exports.CreateRoom = createRoom;
 module.exports.DeleteRoom = deleteRoom;
 module.exports.UpdateRoom = updateRoom;
+module.exports.ExportBuildings = exportBuildings;
+module.exports.GetZonesData = getZonesData;
+module.exports.GetWaterZonesData = getWaterZonesData;
+module.exports.GetBuildingsData = getBuildingsData;
+module.exports.GetRoomsData = getRoomsData;
 module.exports.CreateZone = createZone;
+module.exports.CreateWaterZone = createWaterZone;
+module.exports.CreateBuilding = createBuilding;

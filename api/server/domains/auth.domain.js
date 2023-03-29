@@ -25,7 +25,7 @@ const registerDTO = (req) => {
 		gender: req.gender || null,
 		username: req.username,
 		password: req.password,
-		profileUrl: req.profileUrl || null,
+		profileUrl: req.profile_url || null,
 		deleted: false,
 	};
 };

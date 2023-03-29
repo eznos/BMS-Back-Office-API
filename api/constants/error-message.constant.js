@@ -10,4 +10,6 @@ module.exports = {
 	VALIDATION_ERROR: 'ValidationError',
 	SEQUELIZE_VALIDATION_ERROR: 'SequelizeValidationError',
 	INVALID_ROOM_NO: 'invalid room number',
+	ZONE_ALREADY_EXISTS: 'this zone already exists',
+	WATER_ZONE_ALREADY_EXISTS: 'this water zone already exists',
 };

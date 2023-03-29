@@ -7,6 +7,7 @@ const { users, zones, waterZones, accommodations, rooms, buildings, billings } =
 const { Op } = require('sequelize');
 const xl = require('excel4node');
 const wb = new xl.Workbook();
+var fs = require('fs');
 const chartAndInfo = async (req, res) => {
 	try {
 		var now = new Date();
@@ -86,7 +87,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJan, lastJan] },
+				createdAt: { [Op.between]: [firstJan, lastJan] },
 			},
 		});
 		// feb
@@ -94,7 +95,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstFeb, lastFeb] },
+				createdAt: { [Op.between]: [firstFeb, lastFeb] },
 			},
 		});
 		// mar
@@ -102,7 +103,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMar, lastMar] },
+				createdAt: { [Op.between]: [firstMar, lastMar] },
 			},
 		});
 		// apr
@@ -110,7 +111,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstApr, lastApr] },
+				createdAt: { [Op.between]: [firstApr, lastApr] },
 			},
 		});
 		// may
@@ -118,7 +119,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMay, lastMay] },
+				createdAt: { [Op.between]: [firstMay, lastMay] },
 			},
 		});
 		// jun
@@ -126,7 +127,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJun, lastJun] },
+				createdAt: { [Op.between]: [firstJun, lastJun] },
 			},
 		});
 		//jul
@@ -134,7 +135,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJul, lastJul] },
+				createdAt: { [Op.between]: [firstJul, lastJul] },
 			},
 		});
 		//aug
@@ -142,7 +143,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstAug, lastAug] },
+				createdAt: { [Op.between]: [firstAug, lastAug] },
 			},
 		});
 		// sep
@@ -150,7 +151,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstSep, lastSep] },
+				createdAt: { [Op.between]: [firstSep, lastSep] },
 			},
 		});
 		// oct
@@ -158,7 +159,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstOct, lastOct] },
+				createdAt: { [Op.between]: [firstOct, lastOct] },
 			},
 		});
 		// Nov
@@ -166,7 +167,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstNov, lastNov] },
+				createdAt: { [Op.between]: [firstNov, lastNov] },
 			},
 		});
 		// Dec
@@ -174,7 +175,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstDec, lastDec] },
+				createdAt: { [Op.between]: [firstDec, lastDec] },
 			},
 		});
 		// end of Suranarai
@@ -194,7 +195,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJan, lastJan] },
+				createdAt: { [Op.between]: [firstJan, lastJan] },
 			},
 		});
 		// feb
@@ -202,7 +203,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstFeb, lastFeb] },
+				createdAt: { [Op.between]: [firstFeb, lastFeb] },
 			},
 		});
 		// mar
@@ -210,7 +211,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMar, lastMar] },
+				createdAt: { [Op.between]: [firstMar, lastMar] },
 			},
 		});
 		// apr
@@ -218,7 +219,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstApr, lastApr] },
+				createdAt: { [Op.between]: [firstApr, lastApr] },
 			},
 		});
 		// may
@@ -226,7 +227,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMay, lastMay] },
+				createdAt: { [Op.between]: [firstMay, lastMay] },
 			},
 		});
 		// jun
@@ -234,7 +235,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJun, lastJun] },
+				createdAt: { [Op.between]: [firstJun, lastJun] },
 			},
 		});
 		//jul
@@ -242,7 +243,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJul, lastJul] },
+				createdAt: { [Op.between]: [firstJul, lastJul] },
 			},
 		});
 		//aug
@@ -250,7 +251,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstAug, lastAug] },
+				createdAt: { [Op.between]: [firstAug, lastAug] },
 			},
 		});
 		// sep
@@ -258,7 +259,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstSep, lastSep] },
+				createdAt: { [Op.between]: [firstSep, lastSep] },
 			},
 		});
 		// oct
@@ -266,7 +267,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstOct, lastOct] },
+				createdAt: { [Op.between]: [firstOct, lastOct] },
 			},
 		});
 		// Nov
@@ -274,7 +275,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstNov, lastNov] },
+				createdAt: { [Op.between]: [firstNov, lastNov] },
 			},
 		});
 		// Dec
@@ -282,7 +283,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstDec, lastDec] },
+				createdAt: { [Op.between]: [firstDec, lastDec] },
 			},
 		});
 		// end of Center
@@ -302,7 +303,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJan, lastJan] },
+				createdAt: { [Op.between]: [firstJan, lastJan] },
 			},
 		});
 		// feb
@@ -310,7 +311,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstFeb, lastFeb] },
+				createdAt: { [Op.between]: [firstFeb, lastFeb] },
 			},
 		});
 		// mar
@@ -318,7 +319,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMar, lastMar] },
+				createdAt: { [Op.between]: [firstMar, lastMar] },
 			},
 		});
 		// apr
@@ -326,7 +327,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstApr, lastApr] },
+				createdAt: { [Op.between]: [firstApr, lastApr] },
 			},
 		});
 		// may
@@ -334,7 +335,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMay, lastMay] },
+				createdAt: { [Op.between]: [firstMay, lastMay] },
 			},
 		});
 		// jun
@@ -342,7 +343,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJun, lastJun] },
+				createdAt: { [Op.between]: [firstJun, lastJun] },
 			},
 		});
 		//jul
@@ -350,7 +351,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJul, lastJul] },
+				createdAt: { [Op.between]: [firstJul, lastJul] },
 			},
 		});
 		//aug
@@ -358,7 +359,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstAug, lastAug] },
+				createdAt: { [Op.between]: [firstAug, lastAug] },
 			},
 		});
 		// sep
@@ -366,7 +367,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstSep, lastSep] },
+				createdAt: { [Op.between]: [firstSep, lastSep] },
 			},
 		});
 		// oct
@@ -374,7 +375,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstOct, lastOct] },
+				createdAt: { [Op.between]: [firstOct, lastOct] },
 			},
 		});
 		// Nov
@@ -382,7 +383,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstNov, lastNov] },
+				createdAt: { [Op.between]: [firstNov, lastNov] },
 			},
 		});
 		// Dec
@@ -390,7 +391,7 @@ const chartAndInfo = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstDec, lastDec] },
+				createdAt: { [Op.between]: [firstDec, lastDec] },
 			},
 		});
 		// end
@@ -442,10 +443,10 @@ const chartAndInfo = async (req, res) => {
 		});
 		const room = await rooms.findAll({ where: { status: 'empty' } });
 		const exitInMonth = await accommodations.findAll({
-			where: { deleted: true, updatedAt: { [Op.between]: [startMonth, endMonth] } },
+			where: { deleted: true, createdAt: { [Op.between]: [startMonth, endMonth] } },
 		});
 		const stayInMonth = await accommodations.findAll({
-			where: { host: true, deleted: false, updatedAt: { [Op.between]: [startMonth, endMonth] } },
+			where: { host: true, deleted: false, createdAt: { [Op.between]: [startMonth, endMonth] } },
 		});
 		const numberOfResident = Resident.length;
 		const numberOfRoom = room.length;
@@ -513,6 +514,7 @@ const chartAndInfo = async (req, res) => {
 };
 
 const exportOverviews = async (req, res) => {
+	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 	try {
 		var now = new Date();
 		var startMonth = new Date(now.getFullYear() + 0, 1, 1);
@@ -591,7 +593,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJan, lastJan] },
+				createdAt: { [Op.between]: [firstJan, lastJan] },
 			},
 		});
 		if (sumOfBillsInSuranaraiJan == null) {
@@ -604,7 +606,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstFeb, lastFeb] },
+				createdAt: { [Op.between]: [firstFeb, lastFeb] },
 			},
 		});
 		if (sumOfBillsInSuranaraiFeb == null) {
@@ -617,7 +619,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMar, lastMar] },
+				createdAt: { [Op.between]: [firstMar, lastMar] },
 			},
 		});
 		if (sumOfBillsInSuranaraiMar == null) {
@@ -630,7 +632,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstApr, lastApr] },
+				createdAt: { [Op.between]: [firstApr, lastApr] },
 			},
 		});
 		if (sumOfBillsInSuranaraiApr == null) {
@@ -643,7 +645,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMay, lastMay] },
+				createdAt: { [Op.between]: [firstMay, lastMay] },
 			},
 		});
 		if (sumOfBillsInSuranaraiMay == null) {
@@ -656,7 +658,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJun, lastJun] },
+				createdAt: { [Op.between]: [firstJun, lastJun] },
 			},
 		});
 		if (sumOfBillsInSuranaraiJun == null) {
@@ -669,7 +671,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJul, lastJul] },
+				createdAt: { [Op.between]: [firstJul, lastJul] },
 			},
 		});
 		if (sumOfBillsInSuranaraiJul == null) {
@@ -682,7 +684,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstAug, lastAug] },
+				createdAt: { [Op.between]: [firstAug, lastAug] },
 			},
 		});
 		if (sumOfBillsInSuranaraiAug == null) {
@@ -695,7 +697,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstSep, lastSep] },
+				createdAt: { [Op.between]: [firstSep, lastSep] },
 			},
 		});
 		if (sumOfBillsInSuranaraiSep == null) {
@@ -708,7 +710,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstOct, lastOct] },
+				createdAt: { [Op.between]: [firstOct, lastOct] },
 			},
 		});
 		if (sumOfBillsInSuranaraiOct == null) {
@@ -721,7 +723,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstNov, lastNov] },
+				createdAt: { [Op.between]: [firstNov, lastNov] },
 			},
 		});
 		if (sumOfBillsInSuranaraiNov == null) {
@@ -734,7 +736,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInSuranaraiIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstDec, lastDec] },
+				createdAt: { [Op.between]: [firstDec, lastDec] },
 			},
 		});
 		if (sumOfBillsInSuranaraiDec == null) {
@@ -759,7 +761,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJan, lastJan] },
+				createdAt: { [Op.between]: [firstJan, lastJan] },
 			},
 		});
 		if (sumOfBillsInCenterJan == null) {
@@ -772,7 +774,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstFeb, lastFeb] },
+				createdAt: { [Op.between]: [firstFeb, lastFeb] },
 			},
 		});
 		if (sumOfBillsInCenterFeb == null) {
@@ -785,7 +787,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMar, lastMar] },
+				createdAt: { [Op.between]: [firstMar, lastMar] },
 			},
 		});
 		if (sumOfBillsInCenterMar == null) {
@@ -798,7 +800,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstApr, lastApr] },
+				createdAt: { [Op.between]: [firstApr, lastApr] },
 			},
 		});
 		if (sumOfBillsInCenterApr == null) {
@@ -811,7 +813,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMay, lastMay] },
+				createdAt: { [Op.between]: [firstMay, lastMay] },
 			},
 		});
 		if (sumOfBillsInCenterMay == null) {
@@ -824,7 +826,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJun, lastJun] },
+				createdAt: { [Op.between]: [firstJun, lastJun] },
 			},
 		});
 		if (sumOfBillsInCenterJun == null) {
@@ -837,7 +839,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJul, lastJul] },
+				createdAt: { [Op.between]: [firstJul, lastJul] },
 			},
 		});
 		if (sumOfBillsInCenterJul == null) {
@@ -850,7 +852,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstAug, lastAug] },
+				createdAt: { [Op.between]: [firstAug, lastAug] },
 			},
 		});
 		if (sumOfBillsInCenterAug == null) {
@@ -863,7 +865,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstSep, lastSep] },
+				createdAt: { [Op.between]: [firstSep, lastSep] },
 			},
 		});
 		if (sumOfBillsInCenterSep == null) {
@@ -876,7 +878,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstOct, lastOct] },
+				createdAt: { [Op.between]: [firstOct, lastOct] },
 			},
 		});
 		if (sumOfBillsInCenterOct == null) {
@@ -889,7 +891,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstNov, lastNov] },
+				createdAt: { [Op.between]: [firstNov, lastNov] },
 			},
 		});
 		if (sumOfBillsInCenterNov == null) {
@@ -902,7 +904,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInCenterIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstDec, lastDec] },
+				createdAt: { [Op.between]: [firstDec, lastDec] },
 			},
 		});
 		if (sumOfBillsInCenterDec == null) {
@@ -927,7 +929,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJan, lastJan] },
+				createdAt: { [Op.between]: [firstJan, lastJan] },
 			},
 		});
 		if (sumOfBillsInAsadangJan == null) {
@@ -940,7 +942,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstFeb, lastFeb] },
+				createdAt: { [Op.between]: [firstFeb, lastFeb] },
 			},
 		});
 		if (sumOfBillsInAsadangFeb == null) {
@@ -953,7 +955,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMar, lastMar] },
+				createdAt: { [Op.between]: [firstMar, lastMar] },
 			},
 		});
 		if (sumOfBillsInAsadangMar == null) {
@@ -966,7 +968,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstApr, lastApr] },
+				createdAt: { [Op.between]: [firstApr, lastApr] },
 			},
 		});
 		if (sumOfBillsInAsadangApr == null) {
@@ -979,7 +981,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstMay, lastMay] },
+				createdAt: { [Op.between]: [firstMay, lastMay] },
 			},
 		});
 		if (sumOfBillsInAsadangMay == null) {
@@ -992,7 +994,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJun, lastJun] },
+				createdAt: { [Op.between]: [firstJun, lastJun] },
 			},
 		});
 		if (sumOfBillsInAsadangJun == null) {
@@ -1005,7 +1007,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstJul, lastJul] },
+				createdAt: { [Op.between]: [firstJul, lastJul] },
 			},
 		});
 		if (sumOfBillsInAsadangJul == null) {
@@ -1018,7 +1020,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstAug, lastAug] },
+				createdAt: { [Op.between]: [firstAug, lastAug] },
 			},
 		});
 		if (sumOfBillsInAsadangAug == null) {
@@ -1031,7 +1033,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstSep, lastSep] },
+				createdAt: { [Op.between]: [firstSep, lastSep] },
 			},
 		});
 		if (sumOfBillsInAsadangSep == null) {
@@ -1044,7 +1046,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstOct, lastOct] },
+				createdAt: { [Op.between]: [firstOct, lastOct] },
 			},
 		});
 		if (sumOfBillsInAsadangOct == null) {
@@ -1057,7 +1059,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstNov, lastNov] },
+				createdAt: { [Op.between]: [firstNov, lastNov] },
 			},
 		});
 		if (sumOfBillsInAsadangNov == null) {
@@ -1070,7 +1072,7 @@ const exportOverviews = async (req, res) => {
 			where: {
 				accommodationId: billsInAsadangIds,
 				billingType: 'water',
-				updatedAt: { [Op.between]: [firstDec, lastDec] },
+				createdAt: { [Op.between]: [firstDec, lastDec] },
 			},
 		});
 		if (sumOfBillsInAsadangDec == null) {
@@ -1126,10 +1128,10 @@ const exportOverviews = async (req, res) => {
 		});
 		const room = await rooms.findAll({ where: { status: 'empty' } });
 		const exitInMonth = await accommodations.findAll({
-			where: { deleted: true, updatedAt: { [Op.between]: [startMonth, endMonth] } },
+			where: { deleted: true, createdAt: { [Op.between]: [startMonth, endMonth] } },
 		});
 		const stayInMonth = await accommodations.findAll({
-			where: { host: true, deleted: false, updatedAt: { [Op.between]: [startMonth, endMonth] } },
+			where: { host: true, deleted: false, createdAt: { [Op.between]: [startMonth, endMonth] } },
 		});
 		const numberOfResident = Resident.length;
 		const numberOfRoom = room.length;
@@ -3045,6 +3047,21 @@ const exportOverviews = async (req, res) => {
 		}
 		// end data
 		wb.write('Overviews-Data-Export.xlsx');
+		await delay(2000);
+		res.download(
+			'/home/eznos/Desktop/BMS-Back-Office-API/Overviews-Data-Export.xlsx',
+			'Overviews-Data-Export.xlsx',
+			function (err) {
+				if (err) {
+					console.log(err);
+				} else {
+					console.log('GGG');
+				}
+			}
+		);
+		await delay(3000);
+		var filePath = '/home/eznos/Desktop/BMS-Back-Office-API/Overviews-Data-Export.xlsx';
+		fs.unlinkSync(filePath);
 	} catch (err) {
 		return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 	}

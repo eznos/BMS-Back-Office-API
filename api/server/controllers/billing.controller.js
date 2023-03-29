@@ -8,6 +8,7 @@ const TokenList = require('./auth.controller');
 const { Op } = require('sequelize');
 const xl = require('excel4node');
 const wb = new xl.Workbook();
+var fs = require('fs');
 const water = async (req, res) => {
 	var now = new Date();
 	var startDate = new Date(now.getFullYear() + 0, 1, 1);
@@ -38,7 +39,7 @@ const water = async (req, res) => {
 							],
 							where: {
 								billing_type: 'water',
-								updated_at: { [Op.between]: [startDate, endDate] },
+								created_at: { [Op.between]: [startDate, endDate] },
 							},
 						},
 						{
@@ -94,7 +95,7 @@ const updateWater = async (req, res) => {
 	var startDate = new Date(now.getFullYear() + 0, 1, 1);
 	var endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
-	const { unit, price, status, billing_cycle } = req.body;
+	const { unit, price, billing_cycle } = req.body;
 	const accommodation = await accommodations.findOne({ where: { user_id: id, host: true, deleted: false } });
 	const billing = await billings.findOne({
 		where: {
@@ -108,7 +109,7 @@ const updateWater = async (req, res) => {
 			if (billing) {
 				const updateUnit = await billings.update({ unit: unit }, { where: { id: billing.id } });
 				const updatePrice = await billings.update({ price: price }, { where: { id: billing.id } });
-				const updateStatus = await billings.update({ status: status }, { where: { id: billing.id } });
+				const updateStatus = await billings.update({ status: 'in_progress' }, { where: { id: billing.id } });
 				const updatebillCycle = await billings.update(
 					{ updatedAt: billing_cycle },
 					{ where: { id: billing.id } }
@@ -166,95 +167,32 @@ const createWaterBill = async (req, res) => {
 	}
 };
 
-const electric = async (req, res) => {
-	const date = req.query.date;
-	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+const createOldWaterBill = async (req, res) => {
+	const { rank, firstName, lastName, zone, waterZone, building, roomNo, date, unit, price, priceDiff, totalPay } =
+		req.body;
 	try {
-		const billing = await users.findAll({
-			include: [
-				{
-					model: accommodations,
-					attributes: ['id', 'host'],
-					where: {
-						deleted: 'false',
-					},
-					include: [
-						{
-							model: billings,
-							attributes: ['id', 'billing_type', 'status', 'unit', 'price', 'total_pay', 'updated_at'],
-							where: {
-								billing_type: 'electricity',
-								updated_at: date,
-							},
-						},
-						{
-							model: rooms,
-							attributes: [
-								'id',
-								'building_id',
-								'roomNo',
-								'roomType',
-								'electricityNo',
-								'electricityMeterNo',
-								'status',
-							],
-							include: [
-								{
-									model: zones,
-									attributes: ['id', 'name'],
-								},
-								{
-									model: waterZones,
-									attributes: ['id', 'name'],
-								},
-								{
-									model: buildings,
-									attributes: ['id', 'name'],
-								},
-							],
-						},
-					],
-				},
-			],
-			attributes: ['id', 'rank', 'affiliation', 'firstName', 'lastName'],
+		const user = await users.findOne({ where: { rank: rank, firstName: firstName, lastName: lastName } });
+		const room = await rooms.findOne({
+			where: { zoneId: zone, waterZoneId: waterZone, buildingId: building, roomNo: roomNo },
 		});
-		if (!billing) {
-			res.status(500);
-		}
-		if (!getRefreshTokenFromHeader && !(getRefreshTokenFromHeader in TokenList.TokenList)) {
-			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
-		}
-		if (date && billing && getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
-			return Response(res, SUCCESS_STATUS, OK_CODE, { billing });
+		const accommodation = await accommodations.findOne({
+			where: { roomId: room.id, userId: user.id, host: true, deleted: false },
+		});
+		if (user && room && accommodation) {
+			await billings.create({
+				billingType: 'water',
+				accommodationId: accommodation.id,
+				status: 'calculated',
+				unit: unit,
+				price: price,
+				priceDiff: priceDiff,
+				totalPay: totalPay,
+				createdAt: date,
+				updatedAt: date,
+			});
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 		} else {
-			return Response(res, SUCCESS_STATUS, OK_CODE, {});
-		}
-	} catch (err) {
-		return HandlerError(res, err);
-	}
-};
-
-const updeteEletric = async (req, res) => {
-	const id = req.query.id;
-	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
-	const { unit, price, status } = req.body;
-	const billing = await billings.findOne({ where: { id: id, billingType: 'electricity' } });
-	try {
-		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
-			if (billing) {
-				const updateUnit = await billings.update({ unit: unit }, { where: { id: id } });
-				const updatePrice = await billings.update({ price: price }, { where: { id: id } });
-				const updateStatus = await billings.update({ status: status }, { where: { id: id } });
-				if (updateUnit && updatePrice && updateStatus) {
-					return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
-				} else {
-					return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
-				}
-			} else {
-				return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
-			}
-		} else {
-			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 		}
 	} catch (err) {
 		return HandlerError(res, err);
@@ -277,7 +215,7 @@ const history = async (req, res) => {
 					include: [
 						{
 							model: billings,
-							attributes: ['billing_type', 'unit', 'price', 'price_diff', 'total_pay', 'updated_at'],
+							attributes: ['billing_type', 'unit', 'price', 'price_diff', 'total_pay', 'created_at'],
 							where: {
 								billing_type: 'electricity',
 							},
@@ -303,7 +241,7 @@ const history = async (req, res) => {
 					include: [
 						{
 							model: billings,
-							attributes: ['billing_type', 'unit', 'price', 'price_diff', 'total_pay', 'updated_at'],
+							attributes: ['billing_type', 'unit', 'price', 'price_diff', 'total_pay', 'created_at'],
 							where: {
 								billing_type: 'water',
 							},
@@ -322,7 +260,7 @@ const history = async (req, res) => {
 			return Response(res, SUCCESS_STATUS, OK_CODE, { electric: electric, water: waterbill });
 		}
 		if (!electric && !waterbill) {
-			res.status(200).json({ status: 'success no data', status_code: 200 });
+			res.status(200).json({ status: 'success no data', status_code: 204 });
 		} else {
 			res.status(401).json({ status: 'unauthorized', error_message: 'unauthorized', status_code: 401 });
 		}
@@ -419,6 +357,7 @@ const differencePrice = async (req, res) => {
 const exportWaterBills = async (req, res) => {
 	const id = req.body.id;
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 	var now = new Date();
 	var startDate = new Date(now.getFullYear() + 0, 1, 1);
 	var endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -493,10 +432,39 @@ const exportWaterBills = async (req, res) => {
 				],
 				attributes: ['id', 'rank', 'affiliation', 'firstName', 'lastName'],
 			});
-
-			const ws = wb.addWorksheet('Data', {
-				disableRowSpansOptimization: true,
-			});
+			var options = {
+				margins: {
+					left: 1.5,
+					right: 1.5,
+				},
+				sheetView: {
+					zoomScale: 90, // Defaults to 100
+					zoomScaleNormal: 100, // Defaults to 100
+					zoomScalePageLayoutView: 100, // Defaults to 100
+				},
+				sheetFormat: {
+					baseColWidth: 13, // Defaults to 10. Specifies the number of characters of the maximum digit width of the normal style's font. This value does not include margin padding or extra padding for gridlines. It is only the number of characters.,
+					defaultRowHeight: 20,
+					thickBottom: false, // 'True' if rows have a thick bottom border by default.
+					thickTop: true, // 'True' if rows have a thick top border by default.
+				},
+				sheetProtection: {
+					// same as "Protect Sheet" in Review tab of Excel
+					autoFilter: true, // True means that that user will be unable to modify this setting
+					deleteColumns: true,
+					deleteRows: true,
+					formatCells: true,
+					formatColumns: true,
+					formatRows: true,
+					insertColumns: true,
+					insertHyperlinks: true,
+					insertRows: true,
+					objects: true,
+					sheet: true,
+					sort: true,
+				},
+			};
+			const ws = wb.addWorksheet('sheetname', options);
 			// header satart
 			const headerRows = 3;
 			ws.cell(headerRows, 1)
@@ -504,7 +472,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -534,7 +502,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -564,7 +532,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -594,7 +562,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -624,7 +592,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -654,7 +622,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -684,7 +652,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -714,7 +682,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -744,7 +712,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -774,7 +742,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -804,7 +772,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -834,7 +802,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -864,7 +832,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -894,7 +862,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -924,7 +892,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -954,7 +922,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -984,7 +952,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -1014,7 +982,7 @@ const exportWaterBills = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['left'],
+						horizontal: ['justify'],
 					},
 					font: {
 						color: '000000',
@@ -1050,7 +1018,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1080,7 +1050,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1110,7 +1082,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1140,7 +1114,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1170,7 +1146,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1200,7 +1178,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1230,7 +1210,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1260,7 +1242,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1290,7 +1274,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1320,7 +1306,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1350,7 +1338,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1380,7 +1370,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1410,7 +1402,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1440,7 +1434,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1470,7 +1466,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1500,7 +1498,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1530,7 +1530,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1560,7 +1562,9 @@ const exportWaterBills = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['left'],
+								horizontal: ['justify'],
+								shrinkToFit: true,
+								wrapText: true,
 							},
 							font: {
 								color: '000000',
@@ -1588,12 +1592,848 @@ const exportWaterBills = async (req, res) => {
 				});
 			}
 			// end data
-			await wb.write('Water-Bills-Data-Export.xlsx');
-		} else {
+			await wb.write('Water-Bills-Data-Export' + now + '.xlsx');
+			await delay(2000);
+			res.download(
+				'/home/eznos/Desktop/BMS-Back-Office-API/' + 'Water-Bills-Data-Export' + now + '.xlsx',
+				'Water-Bills-Data-Export' + now + '.xlsx',
+				function (err) {
+					if (err) {
+						console.log(err);
+					} else {
+						console.log('GGG');
+					}
+				}
+			);
+			await delay(3000);
+			var filePath = '/home/eznos/Desktop/BMS-Back-Office-API/' + 'Water-Bills-Data-Export' + now + '.xlsx';
+			fs.unlinkSync(filePath);
+		}
+		// new json to excel
+		// if (bills) {
+		// 	const dataToExport = await users.findAll({
+		// 		where: { id: id, deleted: false },
+		// 		include: [
+		// 			{
+		// 				model: accommodations,
+		// 				attributes: ['id', 'host'],
+		// 				where: { userId: id, host: true, deleted: false },
+		// 				include: [
+		// 					{
+		// 						model: billings,
+		// 						attributes: [
+		// 							'id',
+		// 							'billing_type',
+		// 							'status',
+		// 							'unit',
+		// 							'price',
+		// 							'priceDiff',
+		// 							'totalPay',
+		// 							'createdAt',
+		// 							'updatedAt',
+		// 						],
+		// 						where: {
+		// 							billing_type: 'water',
+		// 							updated_at: { [Op.between]: [startDate, endDate] },
+		// 						},
+		// 					},
+		// 					{
+		// 						model: rooms,
+		// 						attributes: [
+		// 							'id',
+		// 							'building_id',
+		// 							'roomNo',
+		// 							'roomType',
+		// 							'waterNo',
+		// 							'waterMeterNo',
+		// 							'status',
+		// 						],
+		// 						include: [
+		// 							{
+		// 								model: zones,
+		// 								attributes: ['id', 'name'],
+		// 							},
+		// 							{
+		// 								model: waterZones,
+		// 								attributes: ['id', 'name'],
+		// 							},
+		// 							{
+		// 								model: buildings,
+		// 								attributes: ['id', 'name'],
+		// 							},
+		// 						],
+		// 					},
+		// 				],
+		// 			},
+		// 		],
+		// 		attributes: ['id', 'rank', 'affiliation', 'firstName', 'lastName'],
+		// 	});
+		// 	if (dataToExport.length) {
+		// 		const workBook = XLSX.utils.book_new();
+		// 		dataToExport.forEach((item, i) => {
+		// 			XLSX.utils.json_to_sheet([
+		// 				{ S: item.firstName, h: i, e: 3, e_1: 4, t: 5, J: 6, S_1: 7 },
+		// 			], { header: ["S", "h", "e", "e_1", "t", "J", "S_1"] });
+		// 		})
+		// 		XLSX.utils.book_append_sheet(workBook, 'Sheet 1');
+		// 		XLSX.writeFile(workBook, '/home/eznos/Desktop/BMS-Back-Office-API/Water-Bills-Data-Export.xlsx');
+		// 		console.log(dataToExport)
+		// 	}
+
+		// }
+		else {
 			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 		}
 	} else {
 		return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+	}
+};
+
+const exportHistory = async (req, res) => {
+	const firstName = req.body.firstName;
+	const lastName = req.body.lastName;
+	const rank = req.body.rank;
+	try {
+		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+		// const electric = await users.findOne({
+		// 	include: [
+		// 		{
+		// 			model: accommodations,
+		// 			attributes: ['host'],
+		// 			where: {
+		// 				deleted: 'false',
+		// 			},
+		// 			include: [
+		// 				{
+		// 					model: billings,
+		// 					attributes: ['billing_type', 'unit', 'price', 'price_diff', 'total_pay', 'updated_at'],
+		// 					where: {
+		// 						billing_type: 'electricity',
+		// 					},
+		// 				},
+		// 			],
+		// 		},
+		// 	],
+		// 	where: {
+		// 		rank: rank,
+		// 		firstName: firstName,
+		// 		lastName: lastName,
+		// 	},
+		// 	attributes: ['id'],
+		// });
+		const waterbill = await users.findOne({
+			include: [
+				{
+					model: accommodations,
+					attributes: ['host'],
+					where: {
+						deleted: 'false',
+					},
+					include: [
+						{
+							model: billings,
+							attributes: ['billingType', 'unit', 'price', 'priceDiff', 'totalPay', 'updatedAt'],
+							where: {
+								billing_type: 'water',
+							},
+						},
+					],
+				},
+			],
+			where: {
+				rank: rank,
+				firstName: firstName,
+				lastName: lastName,
+			},
+			attributes: ['id'],
+		});
+
+		if (rank && firstName && lastName) {
+			const ws = wb.addWorksheet('Data', {
+				disableRowSpansOptimization: true,
+			});
+			const headerRows = 3;
+			ws.cell(1, 1)
+				.string(rank)
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['justify'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(1, 2)
+				.string(firstName)
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['justify'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(1, 3)
+				.string(lastName)
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['justify'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 1)
+				.string('ลำดับ')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['justify'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 2)
+				.string('เดือน')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['justify'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 3)
+				.string('จำนวนหน่วย')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['justify'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 4)
+				.string('ค่าน้ำ')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['justify'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 5)
+				.string('ค่าน้ำส่วนต่าง')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['justify'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+			ws.cell(headerRows, 6)
+				.string('ค่าใช้จ่ายรวม')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['justify'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
+
+			await delay(500);
+			const startRow = 4;
+			const data = waterbill.accommodations[0].billings;
+			if (data.length) {
+				data.forEach((item, i) => {
+					const currentRow = i + startRow;
+					ws.cell(currentRow, 1)
+						.number(i + 1)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['justify'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 2)
+						.date(item.updatedAt)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['justify'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 3)
+						.number(item.unit)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['justify'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 4)
+						.number(item.price)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['justify'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 5)
+						.number(item.priceDiff)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['justify'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+					ws.cell(currentRow, 6)
+						.number(item.totalPay)
+						.style({
+							alignment: {
+								vertical: ['center'],
+								horizontal: ['justify'],
+							},
+							font: {
+								color: '000000',
+								size: 12,
+							},
+							border: {
+								bottom: {
+									style: 'thin',
+									color: '000000',
+								},
+								right: {
+									style: 'thin',
+									color: '000000',
+								},
+								left: {
+									style: 'thin',
+									color: '000000',
+								},
+								top: {
+									style: 'thin',
+									color: '000000',
+								},
+							},
+						});
+				});
+			}
+			await wb.write('History-Data-Export.xlsx');
+			await delay(2000);
+			await res.download(
+				'/home/eznos/Desktop/BMS-Back-Office-API/History-Data-Export.xlsx',
+				'History-Data-Export.xlsx',
+				function (err) {
+					if (err) {
+						console.log(err);
+					} else {
+						console.log('GGG');
+					}
+				}
+			);
+			await delay(3000);
+			var filePath = '/home/eznos/Desktop/BMS-Back-Office-API/History-Data-Export.xlsx';
+			fs.unlinkSync(filePath);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
+// electrontonic API
+const electric = async (req, res) => {
+	var now = new Date();
+	var startDate = new Date(now.getFullYear() + 0, 1, 1);
+	var endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	try {
+		const billing = await users.findAll({
+			include: [
+				{
+					model: accommodations,
+					attributes: ['id', 'host'],
+					where: {
+						deleted: 'false',
+					},
+					include: [
+						{
+							model: billings,
+							attributes: [
+								'id',
+								'billing_type',
+								'status',
+								'unit',
+								'price',
+								'total_pay',
+								'created_at',
+								'updated_at',
+							],
+							where: {
+								billing_type: 'electricity',
+								created_at: { [Op.between]: [startDate, endDate] },
+							},
+						},
+						{
+							model: rooms,
+							attributes: [
+								'id',
+								'building_id',
+								'roomNo',
+								'roomType',
+								'electricityNo',
+								'electricityMeterNo',
+								'status',
+							],
+							include: [
+								{
+									model: zones,
+									attributes: ['id', 'name'],
+								},
+								{
+									model: buildings,
+									attributes: ['id', 'name'],
+								},
+							],
+						},
+					],
+				},
+			],
+			attributes: ['id', 'rank', 'affiliation', 'firstName', 'lastName'],
+		});
+		if (!billing) {
+			res.status(500);
+		}
+		if (!getRefreshTokenFromHeader && !(getRefreshTokenFromHeader in TokenList.TokenList)) {
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+		}
+		if (billing && getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+			return Response(res, SUCCESS_STATUS, OK_CODE, { billing });
+		} else {
+			return Response(res, SUCCESS_STATUS, OK_CODE, {});
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
+const updeteEletric = async (req, res) => {
+	const id = req.query.id;
+	var now = new Date();
+	var startDate = new Date(now.getFullYear() + 0, 1, 1);
+	var endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	const { unit, price, billing_cycle } = req.body;
+	const accommodation = await accommodations.findOne({ where: { user_id: id, host: true, deleted: false } });
+	const billing = await billings.findOne({
+		where: {
+			accommodation_id: accommodation.id,
+			billingType: 'electricity',
+			updated_at: { [Op.between]: [startDate, endDate] },
+		},
+	});
+	try {
+		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+			if (billing) {
+				const updateUnit = await billings.update({ unit: unit }, { where: { id: billing.id } });
+				const updatePrice = await billings.update({ price: price }, { where: { id: billing.id } });
+				const updateStatus = await billings.update({ status: 'in_progress' }, { where: { id: billing.id } });
+				const updatebillCycle = await billings.update(
+					{ updatedAt: billing_cycle },
+					{ where: { id: billing.id } }
+				);
+				if (updateUnit && updatePrice && updateStatus && updatebillCycle) {
+					return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+				} else {
+					return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+				}
+			} else {
+				return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+			}
+		} else {
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
+const createElectricityBill = async (req, res) => {
+	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	var now = new Date();
+	var startDate = new Date(now.getFullYear() + 0, 1, 1);
+	var endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+	try {
+		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+			const user = await users.findAll({ where: { deleted: false } });
+			const userIds = [];
+			for (let i = 0; i < user.length; i++) {
+				userIds.push(user[i].id);
+			}
+			const room = await rooms.findAll({ where: { status: 'not_empty' } });
+			const roomIds = [];
+			for (let i = 0; i < room.length; i++) {
+				roomIds.push(room[i].id);
+			}
+			const accommodation = await accommodations.findAll({
+				where: { roomId: roomIds, userId: userIds, host: true, deleted: false },
+			});
+			const accomIds = [];
+			for (let i = 0; i < accommodation.length; i++) {
+				accomIds.push(accommodation[i].id);
+			}
+			const bills = await billings.findAll({
+				where: {
+					billingType: 'electricity',
+					accommodationId: accomIds,
+					createdAt: { [Op.between]: [startDate, endDate] },
+				},
+			});
+			if (bills.length == 0) {
+				for (let i = 0; i < accommodation.length; i++) {
+					await billings.create({
+						billingType: 'electricity',
+						accommodationId: accommodation[i].id,
+						status: 'draft',
+						unit: 0,
+						price: 0,
+						totalPay: 0,
+					});
+				}
+				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+			} else {
+				res.status(401).json({
+					status: 'unauthorized',
+					error_message: 'bills has been created',
+					status_code: 401,
+				});
+			}
+		} else {
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+const createOldElectricityBill = async (req, res) => {
+	const { rank, firstName, lastName, zone, building, roomNo, date, unit, price, priceDiff, totalPay } = req.body;
+	try {
+		const user = await users.findOne({ where: { rank: rank, firstName: firstName, lastName: lastName } });
+		const room = await rooms.findOne({ where: { zoneId: zone, buildingId: building, roomNo: roomNo } });
+		const accommodation = await accommodations.findOne({
+			where: { roomId: room.id, userId: user.id, host: true, deleted: false },
+		});
+		if (user && room && accommodation) {
+			await billings.create({
+				billingType: 'electricity',
+				accommodationId: accommodation.id,
+				status: 'calculated',
+				unit: unit,
+				price: price,
+				priceDiff: priceDiff,
+				totalPay: totalPay,
+				createdAt: date,
+				updatedAt: date,
+			});
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+		}
+	} catch (err) {
+		return HandlerError(res, err);
 	}
 };
 
@@ -1605,4 +2445,7 @@ module.exports.UpdeteEletric = updeteEletric;
 module.exports.History = history;
 module.exports.DifferencePrice = differencePrice;
 module.exports.ExportWaterBills = exportWaterBills;
-module.exports.Wb = wb;
+module.exports.ExportHistory = exportHistory;
+module.exports.CreateOldWaterBill = createOldWaterBill;
+module.exports.CreateElectricityBill = createElectricityBill;
+module.exports.CreateOldElectricityBill = createOldElectricityBill;
