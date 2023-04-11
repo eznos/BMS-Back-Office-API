@@ -12,7 +12,7 @@ const { users, accommodations, rooms, zones, waterZones, buildings, billings } =
 const TokenList = require('./auth.controller');
 const nodemailer = require('nodemailer');
 const xl = require('excel4node');
-const wb = new xl.Workbook();
+
 var fs = require('fs');
 const residentsList = async (req, res) => {
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
@@ -211,6 +211,7 @@ const exportResidents = async (req, res) => {
 	const id = req.body.id;
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+	const wb = new xl.Workbook();
 	const resident = await users.findAll({
 		include: [
 			{

@@ -58,8 +58,6 @@ const login = async (req, res) => {
 		if (user) {
 			const hasUser = await bcrypt.compare(loginData.password, user.password);
 			if (user.role === 'user' && hasUser) {
-				console.log('user');
-				console.log(user);
 				return LoginResponse(res, SUCCESS_STATUS, OK_CODE, user);
 			}
 			if (user.role === 'admin' && hasUser) {
@@ -93,7 +91,8 @@ const logout = async (req, res) => {
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
 		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in tokenList) {
-			console.log(getRefreshTokenFromHeader in tokenList);
+			console.log(getRefreshTokenFromHeader);
+			console.log('sss');
 			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 		} else {
 			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);

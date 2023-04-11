@@ -13,6 +13,7 @@ const {
 	CreateOldWaterBill,
 	CreateElectricityBill,
 	CreateOldElectricityBill,
+	ExportElectricBills,
 } = require('../controllers/billing.controller');
 
 // water
@@ -46,6 +47,9 @@ router.post('/electric/add', async (req, res) => {
 });
 router.post('/electric/add/old-bill', async (req, res) => {
 	await CreateOldElectricityBill(req, res);
+});
+router.post('/electric/export', async (req, res) => {
+	await ExportElectricBills(req, res);
 });
 // history
 router.get('/history', async (req, res) => {

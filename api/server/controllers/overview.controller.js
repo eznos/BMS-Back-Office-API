@@ -6,7 +6,7 @@ const { SOMETHING_WENT_WRONG } = require('../../constants/error-message.constant
 const { users, zones, waterZones, accommodations, rooms, buildings, billings } = require('../repositories/models');
 const { Op } = require('sequelize');
 const xl = require('excel4node');
-const wb = new xl.Workbook();
+
 var fs = require('fs');
 const chartAndInfo = async (req, res) => {
 	try {
@@ -515,6 +515,7 @@ const chartAndInfo = async (req, res) => {
 
 const exportOverviews = async (req, res) => {
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+	const wb = new xl.Workbook();
 	try {
 		var now = new Date();
 		var startMonth = new Date(now.getFullYear() + 0, 1, 1);
