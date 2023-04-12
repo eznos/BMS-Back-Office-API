@@ -12,9 +12,7 @@ const water = async (req, res) => {
 	var date = req.query.date;
 	var now = new Date(date);
 	var startDate = new Date(now.getFullYear(), now.getMonth() + 0, +2, 1);
-	console.log(startDate);
 	var endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-	console.log(endDate);
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
 		const billing = await users.findAll({
@@ -1613,80 +1611,7 @@ const exportWaterBills = async (req, res) => {
 			await delay(3000);
 			var filePath = '/home/eznos/Desktop/BMS-Back-Office-API/' + 'Water-Bills-Data-Export' + now + '.xlsx';
 			fs.unlinkSync(filePath);
-		}
-		// new json to excel
-		// if (bills) {
-		// 	const dataToExport = await users.findAll({
-		// 		where: { id: id, deleted: false },
-		// 		include: [
-		// 			{
-		// 				model: accommodations,
-		// 				attributes: ['id', 'host'],
-		// 				where: { userId: id, host: true, deleted: false },
-		// 				include: [
-		// 					{
-		// 						model: billings,
-		// 						attributes: [
-		// 							'id',
-		// 							'billing_type',
-		// 							'status',
-		// 							'unit',
-		// 							'price',
-		// 							'priceDiff',
-		// 							'totalPay',
-		// 							'createdAt',
-		// 							'updatedAt',
-		// 						],
-		// 						where: {
-		// 							billing_type: 'water',
-		// 							updated_at: { [Op.between]: [startDate, endDate] },
-		// 						},
-		// 					},
-		// 					{
-		// 						model: rooms,
-		// 						attributes: [
-		// 							'id',
-		// 							'building_id',
-		// 							'roomNo',
-		// 							'roomType',
-		// 							'waterNo',
-		// 							'waterMeterNo',
-		// 							'status',
-		// 						],
-		// 						include: [
-		// 							{
-		// 								model: zones,
-		// 								attributes: ['id', 'name'],
-		// 							},
-		// 							{
-		// 								model: waterZones,
-		// 								attributes: ['id', 'name'],
-		// 							},
-		// 							{
-		// 								model: buildings,
-		// 								attributes: ['id', 'name'],
-		// 							},
-		// 						],
-		// 					},
-		// 				],
-		// 			},
-		// 		],
-		// 		attributes: ['id', 'rank', 'affiliation', 'firstName', 'lastName'],
-		// 	});
-		// 	if (dataToExport.length) {
-		// 		const workBook = XLSX.utils.book_new();
-		// 		dataToExport.forEach((item, i) => {
-		// 			XLSX.utils.json_to_sheet([
-		// 				{ S: item.firstName, h: i, e: 3, e_1: 4, t: 5, J: 6, S_1: 7 },
-		// 			], { header: ["S", "h", "e", "e_1", "t", "J", "S_1"] });
-		// 		})
-		// 		XLSX.utils.book_append_sheet(workBook, 'Sheet 1');
-		// 		XLSX.writeFile(workBook, '/home/eznos/Desktop/BMS-Back-Office-API/Water-Bills-Data-Export.xlsx');
-		// 		console.log(dataToExport)
-		// 	}
-
-		// }
-		else {
+		} else {
 			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 		}
 	} else {
@@ -2321,11 +2246,9 @@ const updeteEletric = async (req, res) => {
 	var now = new Date();
 	var startDate = new Date(now.getFullYear() + 0, 1, 1);
 	var endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-	console.log(id);
 	// const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	const { unitPrice, unit, billing_cycle } = req.body;
 	const accommodation = await accommodations.findOne({ where: { user_id: id, host: true, deleted: false } });
-	console.log(accommodation);
 	const billing = await billings.findOne({
 		where: {
 			accommodation_id: accommodation.id,
@@ -2417,14 +2340,11 @@ const createElectricityBill = async (req, res) => {
 const createOldElectricityBill = async (req, res) => {
 	const { rank, firstName, lastName, zone, building, roomNo, date, unit, price, totalPay } = req.body;
 	try {
-		console.log(req.body);
 		const user = await users.findOne({ where: { rank: rank, firstName: firstName, lastName: lastName } });
 		const room = await rooms.findOne({ where: { zoneId: zone, buildingId: building, roomNo: roomNo } });
-		console.log(room);
 		const accommodation = await accommodations.findOne({
 			where: { roomId: room.id, userId: user.id, host: true, deleted: false },
 		});
-		console.log(accommodation);
 		if (user && room && accommodation) {
 			await billings.create({
 				billingType: 'electricity',

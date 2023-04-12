@@ -61,7 +61,6 @@ const login = async (req, res) => {
 				return LoginResponse(res, SUCCESS_STATUS, OK_CODE, user);
 			}
 			if (user.role === 'admin' && hasUser) {
-				console.log('admin');
 				const tokenPayload = {
 					username: user.username,
 					role: user.role,
@@ -91,8 +90,6 @@ const logout = async (req, res) => {
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
 		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in tokenList) {
-			console.log(getRefreshTokenFromHeader);
-			console.log('sss');
 			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 		} else {
 			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
@@ -115,7 +112,6 @@ const token = async (req, res) => {
 		};
 		// update the token in the list
 		tokenList[loginData.result.token.refresh_token].token = token;
-		console.log(tokenList);
 		res.status(200).json(response);
 	} else {
 		res.status(404).send('Invalid request');
@@ -138,7 +134,6 @@ const forgetPassword = async (req, res) => {
 			where: { email: emailData },
 			attributes: ['email'],
 		});
-		// console.log(user);
 		if (user) {
 			let otpCode = totp.generate();
 			const transporter = nodemailer.createTransport({
@@ -170,7 +165,6 @@ const forgetPassword = async (req, res) => {
 				else console.log(info);
 				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 			});
-			console.log(otpCode);
 			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 		} else {
 			return Response(res, UNPROCESSABLE_ENTITY_STATUS, INVALID_EMAIL_CODE);
