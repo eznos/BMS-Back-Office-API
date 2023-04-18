@@ -7,7 +7,6 @@ const {
 	OK_CODE,
 	NO_CONTENT_CODE,
 	UNAUTHORIZED_CODE,
-	UNPROCESSABLE_ENTITY_CODE,
 } = require('../../constants/http-status-code.constant');
 const {
 	EMAIL_ALREADY_EXISTS,
@@ -143,27 +142,19 @@ const forgetPassword = async (req, res) => {
 					pass: process.env.EZNOS_PASSWORD, // your password
 				},
 			});
+			console.log(process.env.EZNOS_MAIL);
+			console.log(process.env.EZNOS_PASSWORD);
 			// setup email data with unicode symbols
 			const mailOptions = {
 				from: process.env.EZNOS_MAIL, // sender
 				to: emailData, // list of receivers
-				subject: 'ทดสอบการส่งรหัส OTP ', // Mail subject
-				html:
-					'<!DOCTYPE html>' +
-					'<html><head><title>Test OTP Send to Email</title>' +
-					'</head><body><div>' +
-					'<img src="https://www.techhub.in.th/wp-content/uploads/2021/05/118283916_b19c5a1f-162b-410b-8169-f58f0d153752.jpg" alt="" width="160">' +
-					'<p>รหัส OTP สำหรับใช้ในการลืมรหัสผ่าน</p>' +
-					'<br></br>' +
-					otpCode +
-					'<br></br>' +
-					'</div></body></html>'`sdfef`,
+				subject: 'รหัส OTP ', // Mail subject
+				text: 'รหัส OTP  ' + otpCode,
 			};
 			// send mail with defined transport object
 			transporter.sendMail(mailOptions, function (err, info) {
 				if (err) console.log(err);
 				else console.log(info);
-				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 			});
 			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 		} else {
@@ -192,7 +183,7 @@ const recoveryCode = async (req, res) => {
 				const hashPassword = await bcrypt.hash(password, 10);
 				const newpassword = await users.update({ password: hashPassword }, { where: { email: emailData } });
 				if (newpassword) {
-					return Response(res, SUCCESS_STATUS, UNPROCESSABLE_ENTITY_CODE);
+					return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 				}
 			} else {
 				return HandlerError(res, CustomError(INVALID_RECOVERY_CODE));
