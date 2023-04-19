@@ -11,6 +11,9 @@ module.exports = {
 		dialect: 'postgres',
 		dialectOptions: {
 			useUTC: false,
+			ssl: {
+				required: false,
+			},
 		},
 		timezone: '+07:00',
 	},
@@ -23,6 +26,9 @@ module.exports = {
 		dialect: 'postgres',
 		dialectOptions: {
 			useUTC: false,
+			ssl: {
+				required: false,
+			},
 		},
 		timezone: '+07:00',
 	},
@@ -35,6 +41,9 @@ module.exports = {
 		dialect: 'postgres',
 		dialectOptions: {
 			useUTC: false,
+			ssl: {
+				required: false,
+			},
 		},
 		timezone: '+07:00',
 	},
