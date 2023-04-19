@@ -7,7 +7,6 @@ const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
 const { Authentication } = require('./server/middlewares/auth.middleware');
 const { RouteV1 } = require('./server/routes/api-version1.route');
-
 // * dayjs use timezone
 dayjs.extend(utc);
 dayjs.extend(timezone);
