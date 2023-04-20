@@ -15,7 +15,7 @@ const {
 	INVALID_EMAIL_CODE,
 } = require('../../constants/error-message.constant');
 const { INVALID_USERNAME_OR_PASSWORD } = require('../../constants/error-message.constant');
-const { RegisterScheme, RegisterDTO, LoginScheme } = require('../domains/auth.domain');
+const { LoginScheme } = require('../domains/auth.domain');
 const { users } = require('../repositories/models');
 const jwt = require('jsonwebtoken');
 const OTPAuth = require('otpauth');
@@ -24,13 +24,26 @@ const nodemailer = require('nodemailer');
 
 const register = async (req, res) => {
 	try {
-		let user = await RegisterScheme.validateAsync(req.body);
+		let user = req.body;
 		const isExist = await users.findOne({ where: { email: user.email } });
 		if (isExist) {
 			return HandlerError(res, CustomError(EMAIL_ALREADY_EXISTS));
 		}
 		user.password = await bcrypt.hash(user.password, 10);
-		await users.create(RegisterDTO(user));
+		await users.create({
+			username: user.username,
+			password: user.password,
+			rank: user.rank,
+			affiliation: user.affiliation,
+			firstName: user.first_name,
+			lastName: user.last_name,
+			gender: user.gender,
+			email: user.email,
+			phoneNumber: user.phone_number,
+			profileUrl: user.profile_url,
+			role: 'user',
+			deleted: false,
+		});
 		return Response(res, SUCCESS_STATUS, CREATED_CODE);
 	} catch (err) {
 		return HandlerError(res, err);
