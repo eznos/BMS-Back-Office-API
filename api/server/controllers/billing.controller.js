@@ -3475,11 +3475,11 @@ const exportElectricBills = async (req, res) => {
 				});
 			}
 			// end data
-			await wb.write('Electric-Bills-Data-Export' + now + '.xlsx');
+			await wb.write('Electric-Bills-Data-Export.xlsx');
 			await delay(2000);
 			res.download(
-				'/opt/render/project/' + 'Electric-Bills-Data-Export' + now + '.xlsx',
-				'Electric-Bills-Data-Export' + now + '.xlsx',
+				'../.../../Electric-Bills-Data-Export.xlsx',
+				'Electric-Bills-Data-Export.xlsx',
 				function (err) {
 					if (err) {
 						console.log(err);
@@ -3489,7 +3489,7 @@ const exportElectricBills = async (req, res) => {
 				}
 			);
 			await delay(3000);
-			var filePath = '/opt/render/project/' + 'Electric-Bills-Data-Export' + now + '.xlsx';
+			var filePath = '../.../../Electric-Bills-Data-Export.xlsx';
 			fs.unlinkSync(filePath);
 		} else {
 			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));

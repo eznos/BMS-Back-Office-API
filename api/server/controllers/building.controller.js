@@ -794,19 +794,15 @@ const exportBuildings = async (req, res) => {
 			// end data
 			await wb.write('Buildings-Data-Export.xlsx');
 			await delay(2000);
-			await res.download(
-				'/opt/render/project/Buildings-Data-Export.xlsx',
-				'Buildings-Data-Export.xlsx',
-				function (err) {
-					if (err) {
-						console.log(err);
-					} else {
-						console.log('GGG');
-					}
+			await res.download('../.../../Buildings-Data-Export.xlsx', 'Buildings-Data-Export.xlsx', function (err) {
+				if (err) {
+					console.log(err);
+				} else {
+					console.log('GGG');
 				}
-			);
+			});
 			await delay(3000);
-			var filePath = '/opt/render/project/Buildings-Data-Export.xlsx';
+			var filePath = '../.../..//Buildings-Data-Export.xlsx';
 			fs.unlinkSync(filePath);
 		}
 	} else {

@@ -3049,7 +3049,7 @@ const exportOverviews = async (req, res) => {
 		// end data
 		wb.write('Overviews-Data-Export.xlsx');
 		await delay(2000);
-		res.download('/opt/render/project/Overviews-Data-Export.xlsx', 'Overviews-Data-Export.xlsx', function (err) {
+		res.download('../.../../Overviews-Data-Export.xlsx', 'Overviews-Data-Export.xlsx', function (err) {
 			if (err) {
 				console.log(err);
 			} else {
@@ -3057,7 +3057,7 @@ const exportOverviews = async (req, res) => {
 			}
 		});
 		await delay(3000);
-		var filePath = '/opt/render/project/Overviews-Data-Export.xlsx';
+		var filePath = '../.../../Overviews-Data-Export.xlsx';
 		fs.unlinkSync(filePath);
 	} catch (err) {
 		return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
