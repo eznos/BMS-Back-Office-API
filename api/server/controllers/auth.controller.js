@@ -57,7 +57,20 @@ const login = async (req, res) => {
 		if (user) {
 			const hasUser = await bcrypt.compare(loginData.password, user.password);
 			if (user.role === 'user' && hasUser) {
-				return LoginResponse(res, SUCCESS_STATUS, OK_CODE, user);
+				const tokenPayload = {
+					username: user.username,
+					role: user.role,
+				};
+				const accessToken = jwt.sign(tokenPayload, process.env.secret, { expiresIn: process.env.tokenLife });
+				const refreshToken = jwt.sign(tokenPayload, process.env.refreshTokenSecret, {
+					expiresIn: process.env.refreshTokenLife,
+				});
+				const token = {
+					access_token: accessToken,
+					refresh_token: refreshToken,
+				};
+				tokenList[refreshToken] = token;
+				return LoginResponse(res, SUCCESS_STATUS, OK_CODE, user, token);
 			}
 			if (user.role === 'admin' && hasUser) {
 				const tokenPayload = {
