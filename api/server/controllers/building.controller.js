@@ -802,7 +802,7 @@ const exportBuildings = async (req, res) => {
 				}
 			});
 			await delay(3000);
-			var filePath = '../.../..//Buildings-Data-Export.xlsx';
+			var filePath = '../.../../Buildings-Data-Export.xlsx';
 			fs.unlinkSync(filePath);
 		}
 	} else {
