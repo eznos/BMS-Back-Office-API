@@ -3049,19 +3049,15 @@ const exportOverviews = async (req, res) => {
 		// end data
 		wb.write('Overviews-Data-Export.xlsx');
 		await delay(2000);
-		res.download(
-			'/home/eznos/Desktop/BMS-Back-Office-API/Overviews-Data-Export.xlsx',
-			'Overviews-Data-Export.xlsx',
-			function (err) {
-				if (err) {
-					console.log(err);
-				} else {
-					console.log('GGG');
-				}
+		res.download('/opt/render/project/Overviews-Data-Export.xlsx', 'Overviews-Data-Export.xlsx', function (err) {
+			if (err) {
+				console.log(err);
+			} else {
+				console.log('GGG');
 			}
-		);
+		});
 		await delay(3000);
-		var filePath = '/home/eznos/Desktop/BMS-Back-Office-API/Overviews-Data-Export.xlsx';
+		var filePath = '/opt/render/project/Overviews-Data-Export.xlsx';
 		fs.unlinkSync(filePath);
 	} catch (err) {
 		return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));

@@ -3478,7 +3478,7 @@ const exportElectricBills = async (req, res) => {
 			await wb.write('Electric-Bills-Data-Export' + now + '.xlsx');
 			await delay(2000);
 			res.download(
-				'/home/eznos/Desktop/BMS-Back-Office-API/' + 'Electric-Bills-Data-Export' + now + '.xlsx',
+				'/opt/render/project/' + 'Electric-Bills-Data-Export' + now + '.xlsx',
 				'Electric-Bills-Data-Export' + now + '.xlsx',
 				function (err) {
 					if (err) {
@@ -3489,7 +3489,7 @@ const exportElectricBills = async (req, res) => {
 				}
 			);
 			await delay(3000);
-			var filePath = '/home/eznos/Desktop/BMS-Back-Office-API/' + 'Electric-Bills-Data-Export' + now + '.xlsx';
+			var filePath = '/opt/render/project/' + 'Electric-Bills-Data-Export' + now + '.xlsx';
 			fs.unlinkSync(filePath);
 		} else {
 			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));

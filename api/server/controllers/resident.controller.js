@@ -1084,7 +1084,7 @@ const exportResidents = async (req, res) => {
 			await wb.write('Resident-Data-Export.xlsx');
 			await delay(2000);
 			await res.download(
-				'/home/eznos/Desktop/BMS-Back-Office-API/Resident-Data-Export.xlsx',
+				'/opt/render/project/Resident-Data-Export.xlsx',
 				'Resident-Data-Export.xlsx',
 				function (err) {
 					if (err) {
@@ -1095,7 +1095,7 @@ const exportResidents = async (req, res) => {
 				}
 			);
 			await delay(3000);
-			var filePath = '/home/eznos/Desktop/BMS-Back-Office-API/Resident-Data-Export.xlsx';
+			var filePath = '/opt/render/project/Resident-Data-Export.xlsx';
 			fs.unlinkSync(filePath);
 		}
 	} else {
