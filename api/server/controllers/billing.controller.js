@@ -179,8 +179,9 @@ const createOldWaterBill = async (req, res) => {
 		const accommodation = await accommodations.findOne({
 			where: { roomId: room.id, userId: user.id, host: true, deleted: false },
 		});
+
 		if (user && room && accommodation) {
-			await billings.create({
+			const createOldBill = await billings.create({
 				billingType: 'water',
 				accommodationId: accommodation.id,
 				status: 'calculated',
@@ -191,6 +192,8 @@ const createOldWaterBill = async (req, res) => {
 				createdAt: date,
 				updatedAt: date,
 			});
+			console.log(date + '-5');
+			await billings.update({ createdAt: date + '-5' }, { where: { id: createOldBill.id } });
 			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 		} else {
 			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
