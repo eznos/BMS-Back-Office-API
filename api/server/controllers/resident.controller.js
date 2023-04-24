@@ -12,8 +12,6 @@ const { users, accommodations, rooms, zones, waterZones, buildings, billings } =
 const TokenList = require('./auth.controller');
 const nodemailer = require('nodemailer');
 const xl = require('excel4node');
-
-var fs = require('fs');
 const residentsList = async (req, res) => {
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
@@ -1081,18 +1079,12 @@ const exportResidents = async (req, res) => {
 				});
 			}
 			// end data
-			await wb.write('Resident-Data-Export.xlsx');
-			await delay(2000);
-			await res.download('../.../../Resident-Data-Export.xlsx', 'Resident-Data-Export.xlsx', function (err) {
-				if (err) {
-					console.log(err);
-				} else {
-					console.log('GGG');
-				}
-			});
-			await delay(3000);
-			var filePath = '../.../../Resident-Data-Export.xlsx';
-			fs.unlinkSync(filePath);
+			await delay(550);
+			wb.write(`FileName.xlsx`, res);
+
+			// const buffer = await wb.writeToBuffer('Resident-Data-Export.xlsx');
+			// await wb.write();
+			// return Response(res, SUCCESS_STATUS, OK_CODE, { buffer });
 		}
 	} else {
 		return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
