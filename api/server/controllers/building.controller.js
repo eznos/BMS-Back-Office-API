@@ -152,6 +152,33 @@ const exportBuildings = async (req, res) => {
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 	try {
 		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+			const room = await rooms.findAll({
+				where: {
+					id: id,
+				},
+				include: [
+					{
+						model: zones,
+					},
+					{
+						model: waterZones,
+					},
+					{
+						model: buildings,
+					},
+				],
+				attributes: [
+					'id',
+					'building_id',
+					'roomNo',
+					'roomType',
+					'waterNo',
+					'waterMeterNo',
+					'electricityNo',
+					'electricityMeterNo',
+					'status',
+				],
+			});
 			if (room) {
 				const ws = wb.addWorksheet('Data');
 				const headerRows = 3;
@@ -773,33 +800,6 @@ const exportBuildings = async (req, res) => {
 	} catch (err) {
 		return HandlerError(res, err);
 	}
-	const room = await rooms.findAll({
-		where: {
-			id: id,
-		},
-		include: [
-			{
-				model: zones,
-			},
-			{
-				model: waterZones,
-			},
-			{
-				model: buildings,
-			},
-		],
-		attributes: [
-			'id',
-			'building_id',
-			'roomNo',
-			'roomType',
-			'waterNo',
-			'waterMeterNo',
-			'electricityNo',
-			'electricityMeterNo',
-			'status',
-		],
-	});
 };
 
 const getZonesData = async (req, res) => {
