@@ -7,7 +7,6 @@ const { users, zones, waterZones, accommodations, rooms, buildings, billings } =
 const { Op } = require('sequelize');
 const xl = require('excel4node');
 
-var fs = require('fs');
 const chartAndInfo = async (req, res) => {
 	try {
 		var now = new Date();
@@ -3047,18 +3046,8 @@ const exportOverviews = async (req, res) => {
 				});
 		}
 		// end data
-		wb.write('Overviews-Data-Export.xlsx');
-		await delay(2000);
-		res.download('../.../../Overviews-Data-Export.xlsx', 'Overviews-Data-Export.xlsx', function (err) {
-			if (err) {
-				console.log(err);
-			} else {
-				console.log('GGG');
-			}
-		});
-		await delay(3000);
-		var filePath = '../.../../Overviews-Data-Export.xlsx';
-		fs.unlinkSync(filePath);
+		await delay(550);
+		wb.write(`Overviews-Data-Export.xlsx`, res);
 	} catch (err) {
 		return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 	}
