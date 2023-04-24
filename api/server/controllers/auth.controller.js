@@ -220,6 +220,30 @@ const recoveryCode = async (req, res) => {
 	}
 };
 
+const editPersonalInfo = async (req, res) => {
+	const id = await req.query.id;
+	const data = await req.body;
+	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	try {
+		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in tokenList.TokenList) {
+			await users.update({ rank: data.rank }, { where: { id: id } });
+			await users.update({ affiliation: data.affiliation }, { where: { id: id } });
+			await users.update({ firstName: data.firstName }, { where: { id: id } });
+			await users.update({ lastName: data.lastName }, { where: { id: id } });
+			await users.update({ email: data.email }, { where: { id: id } });
+			await users.update({ phoneNumber: data.phoneNumber }, { where: { id: id } });
+			await users.update({ gender: data.gender }, { where: { id: id } });
+			await users.update({ profileUrl: data.profileUrl }, { where: { id: id } });
+			console.log(data.rank);
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
 module.exports.Register = register;
 module.exports.Login = login;
 module.exports.Token = token;
@@ -227,3 +251,4 @@ module.exports.Logout = logout;
 module.exports.ForgetPassword = forgetPassword;
 module.exports.RecoveryCode = recoveryCode;
 module.exports.TokenList = tokenList;
+module.exports.EditPersonalInfo = editPersonalInfo;
