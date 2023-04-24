@@ -13,7 +13,6 @@ const { UpdateRoomScheme, UpdateRoomDTO } = require('../domains/building.domain'
 const TokenList = require('./auth.controller');
 const xl = require('excel4node');
 const wb = new xl.Workbook();
-var fs = require('fs');
 const building = async (req, res) => {
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
@@ -151,6 +150,629 @@ const exportBuildings = async (req, res) => {
 	const id = req.body.id;
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+	try {
+		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+			if (room) {
+				const ws = wb.addWorksheet('Data');
+				const headerRows = 3;
+				ws.cell(headerRows, 1)
+					.string('ลำดับ')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(headerRows, 2)
+					.string('สายมิเตอร์')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(headerRows, 3)
+					.string('พื้นที่')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(headerRows, 4)
+					.string('อาคาร')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(headerRows, 5)
+					.string('เลขห้องพัก')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(headerRows, 6)
+					.string('เลขผู้ใช้น้ำ')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(headerRows, 7)
+					.string('เลขมิเตอร์น้ำ')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(headerRows, 8)
+					.string('ประเภทห้องพัก')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(headerRows, 9)
+					.string('สถานะ')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+
+				ws.cell(4, 13)
+					.string('not_empty = ห้องไม่ว่าง')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				ws.cell(5, 13)
+					.string('empty = ห้องว่าง')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
+				await delay(500);
+				const startRow = 4;
+				if (room.length) {
+					room.forEach((item, i) => {
+						const currentRow = i + startRow;
+						ws.cell(currentRow, 1)
+							.number(i + 1)
+							.style({
+								alignment: {
+									vertical: ['center'],
+									horizontal: ['left'],
+								},
+								font: {
+									color: '000000',
+									size: 12,
+								},
+								border: {
+									bottom: {
+										style: 'thin',
+										color: '000000',
+									},
+									right: {
+										style: 'thin',
+										color: '000000',
+									},
+									left: {
+										style: 'thin',
+										color: '000000',
+									},
+									top: {
+										style: 'thin',
+										color: '000000',
+									},
+								},
+							});
+						ws.cell(currentRow, 2)
+							.string(item.waterZone.name)
+							.style({
+								alignment: {
+									vertical: ['center'],
+									horizontal: ['left'],
+								},
+								font: {
+									color: '000000',
+									size: 12,
+								},
+								border: {
+									bottom: {
+										style: 'thin',
+										color: '000000',
+									},
+									right: {
+										style: 'thin',
+										color: '000000',
+									},
+									left: {
+										style: 'thin',
+										color: '000000',
+									},
+									top: {
+										style: 'thin',
+										color: '000000',
+									},
+								},
+							});
+						ws.cell(currentRow, 3)
+							.string(item.zone.name)
+							.style({
+								alignment: {
+									vertical: ['center'],
+									horizontal: ['left'],
+								},
+								font: {
+									color: '000000',
+									size: 12,
+								},
+								border: {
+									bottom: {
+										style: 'thin',
+										color: '000000',
+									},
+									right: {
+										style: 'thin',
+										color: '000000',
+									},
+									left: {
+										style: 'thin',
+										color: '000000',
+									},
+									top: {
+										style: 'thin',
+										color: '000000',
+									},
+								},
+							});
+						ws.cell(currentRow, 4)
+							.string(item.building.name)
+							.style({
+								alignment: {
+									vertical: ['center'],
+									horizontal: ['left'],
+								},
+								font: {
+									color: '000000',
+									size: 12,
+								},
+								border: {
+									bottom: {
+										style: 'thin',
+										color: '000000',
+									},
+									right: {
+										style: 'thin',
+										color: '000000',
+									},
+									left: {
+										style: 'thin',
+										color: '000000',
+									},
+									top: {
+										style: 'thin',
+										color: '000000',
+									},
+								},
+							});
+						ws.cell(currentRow, 5)
+							.string(item.roomNo)
+							.style({
+								alignment: {
+									vertical: ['center'],
+									horizontal: ['left'],
+								},
+								font: {
+									color: '000000',
+									size: 12,
+								},
+								border: {
+									bottom: {
+										style: 'thin',
+										color: '000000',
+									},
+									right: {
+										style: 'thin',
+										color: '000000',
+									},
+									left: {
+										style: 'thin',
+										color: '000000',
+									},
+									top: {
+										style: 'thin',
+										color: '000000',
+									},
+								},
+							});
+						ws.cell(currentRow, 6)
+							.string(item.waterNo)
+							.style({
+								alignment: {
+									vertical: ['center'],
+									horizontal: ['left'],
+								},
+								font: {
+									color: '000000',
+									size: 12,
+								},
+								border: {
+									bottom: {
+										style: 'thin',
+										color: '000000',
+									},
+									right: {
+										style: 'thin',
+										color: '000000',
+									},
+									left: {
+										style: 'thin',
+										color: '000000',
+									},
+									top: {
+										style: 'thin',
+										color: '000000',
+									},
+								},
+							});
+						ws.cell(currentRow, 7)
+							.string(item.waterMeterNo)
+							.style({
+								alignment: {
+									vertical: ['center'],
+									horizontal: ['left'],
+								},
+								font: {
+									color: '000000',
+									size: 12,
+								},
+								border: {
+									bottom: {
+										style: 'thin',
+										color: '000000',
+									},
+									right: {
+										style: 'thin',
+										color: '000000',
+									},
+									left: {
+										style: 'thin',
+										color: '000000',
+									},
+									top: {
+										style: 'thin',
+										color: '000000',
+									},
+								},
+							});
+						ws.cell(currentRow, 8)
+							.string(item.roomType)
+							.style({
+								alignment: {
+									vertical: ['center'],
+									horizontal: ['left'],
+								},
+								font: {
+									color: '000000',
+									size: 12,
+								},
+								border: {
+									bottom: {
+										style: 'thin',
+										color: '000000',
+									},
+									right: {
+										style: 'thin',
+										color: '000000',
+									},
+									left: {
+										style: 'thin',
+										color: '000000',
+									},
+									top: {
+										style: 'thin',
+										color: '000000',
+									},
+								},
+							});
+						ws.cell(currentRow, 9)
+							.string(item.status)
+							.style({
+								alignment: {
+									vertical: ['center'],
+									horizontal: ['left'],
+								},
+								font: {
+									color: '000000',
+									size: 12,
+								},
+								border: {
+									bottom: {
+										style: 'thin',
+										color: '000000',
+									},
+									right: {
+										style: 'thin',
+										color: '000000',
+									},
+									left: {
+										style: 'thin',
+										color: '000000',
+									},
+									top: {
+										style: 'thin',
+										color: '000000',
+									},
+								},
+							});
+					});
+				}
+				// end data
+				await delay(550);
+				wb.write(`FileName.xlsx`, res);
+			}
+		} else {
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
 	const room = await rooms.findAll({
 		where: {
 			id: id,
@@ -178,636 +800,6 @@ const exportBuildings = async (req, res) => {
 			'status',
 		],
 	});
-
-	if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
-		if (room) {
-			const ws = wb.addWorksheet('Data');
-			const headerRows = 3;
-			ws.cell(headerRows, 1)
-				.string('ลำดับ')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(headerRows, 2)
-				.string('สายมิเตอร์')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(headerRows, 3)
-				.string('พื้นที่')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(headerRows, 4)
-				.string('อาคาร')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(headerRows, 5)
-				.string('เลขห้องพัก')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(headerRows, 6)
-				.string('เลขผู้ใช้น้ำ')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(headerRows, 7)
-				.string('เลขมิเตอร์น้ำ')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(headerRows, 8)
-				.string('ประเภทห้องพัก')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(headerRows, 9)
-				.string('สถานะ')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-
-			ws.cell(4, 13)
-				.string('not_empty = ห้องไม่ว่าง')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(5, 13)
-				.string('empty = ห้องว่าง')
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			await delay(500);
-			const startRow = 4;
-			if (room.length) {
-				room.forEach((item, i) => {
-					const currentRow = i + startRow;
-					ws.cell(currentRow, 1)
-						.number(i + 1)
-						.style({
-							alignment: {
-								vertical: ['center'],
-								horizontal: ['left'],
-							},
-							font: {
-								color: '000000',
-								size: 12,
-							},
-							border: {
-								bottom: {
-									style: 'thin',
-									color: '000000',
-								},
-								right: {
-									style: 'thin',
-									color: '000000',
-								},
-								left: {
-									style: 'thin',
-									color: '000000',
-								},
-								top: {
-									style: 'thin',
-									color: '000000',
-								},
-							},
-						});
-					ws.cell(currentRow, 2)
-						.string(item.waterZone.name)
-						.style({
-							alignment: {
-								vertical: ['center'],
-								horizontal: ['left'],
-							},
-							font: {
-								color: '000000',
-								size: 12,
-							},
-							border: {
-								bottom: {
-									style: 'thin',
-									color: '000000',
-								},
-								right: {
-									style: 'thin',
-									color: '000000',
-								},
-								left: {
-									style: 'thin',
-									color: '000000',
-								},
-								top: {
-									style: 'thin',
-									color: '000000',
-								},
-							},
-						});
-					ws.cell(currentRow, 3)
-						.string(item.zone.name)
-						.style({
-							alignment: {
-								vertical: ['center'],
-								horizontal: ['left'],
-							},
-							font: {
-								color: '000000',
-								size: 12,
-							},
-							border: {
-								bottom: {
-									style: 'thin',
-									color: '000000',
-								},
-								right: {
-									style: 'thin',
-									color: '000000',
-								},
-								left: {
-									style: 'thin',
-									color: '000000',
-								},
-								top: {
-									style: 'thin',
-									color: '000000',
-								},
-							},
-						});
-					ws.cell(currentRow, 4)
-						.string(item.building.name)
-						.style({
-							alignment: {
-								vertical: ['center'],
-								horizontal: ['left'],
-							},
-							font: {
-								color: '000000',
-								size: 12,
-							},
-							border: {
-								bottom: {
-									style: 'thin',
-									color: '000000',
-								},
-								right: {
-									style: 'thin',
-									color: '000000',
-								},
-								left: {
-									style: 'thin',
-									color: '000000',
-								},
-								top: {
-									style: 'thin',
-									color: '000000',
-								},
-							},
-						});
-					ws.cell(currentRow, 5)
-						.string(item.roomNo)
-						.style({
-							alignment: {
-								vertical: ['center'],
-								horizontal: ['left'],
-							},
-							font: {
-								color: '000000',
-								size: 12,
-							},
-							border: {
-								bottom: {
-									style: 'thin',
-									color: '000000',
-								},
-								right: {
-									style: 'thin',
-									color: '000000',
-								},
-								left: {
-									style: 'thin',
-									color: '000000',
-								},
-								top: {
-									style: 'thin',
-									color: '000000',
-								},
-							},
-						});
-					ws.cell(currentRow, 6)
-						.string(item.waterNo)
-						.style({
-							alignment: {
-								vertical: ['center'],
-								horizontal: ['left'],
-							},
-							font: {
-								color: '000000',
-								size: 12,
-							},
-							border: {
-								bottom: {
-									style: 'thin',
-									color: '000000',
-								},
-								right: {
-									style: 'thin',
-									color: '000000',
-								},
-								left: {
-									style: 'thin',
-									color: '000000',
-								},
-								top: {
-									style: 'thin',
-									color: '000000',
-								},
-							},
-						});
-					ws.cell(currentRow, 7)
-						.string(item.waterMeterNo)
-						.style({
-							alignment: {
-								vertical: ['center'],
-								horizontal: ['left'],
-							},
-							font: {
-								color: '000000',
-								size: 12,
-							},
-							border: {
-								bottom: {
-									style: 'thin',
-									color: '000000',
-								},
-								right: {
-									style: 'thin',
-									color: '000000',
-								},
-								left: {
-									style: 'thin',
-									color: '000000',
-								},
-								top: {
-									style: 'thin',
-									color: '000000',
-								},
-							},
-						});
-					ws.cell(currentRow, 8)
-						.string(item.roomType)
-						.style({
-							alignment: {
-								vertical: ['center'],
-								horizontal: ['left'],
-							},
-							font: {
-								color: '000000',
-								size: 12,
-							},
-							border: {
-								bottom: {
-									style: 'thin',
-									color: '000000',
-								},
-								right: {
-									style: 'thin',
-									color: '000000',
-								},
-								left: {
-									style: 'thin',
-									color: '000000',
-								},
-								top: {
-									style: 'thin',
-									color: '000000',
-								},
-							},
-						});
-					ws.cell(currentRow, 9)
-						.string(item.status)
-						.style({
-							alignment: {
-								vertical: ['center'],
-								horizontal: ['left'],
-							},
-							font: {
-								color: '000000',
-								size: 12,
-							},
-							border: {
-								bottom: {
-									style: 'thin',
-									color: '000000',
-								},
-								right: {
-									style: 'thin',
-									color: '000000',
-								},
-								left: {
-									style: 'thin',
-									color: '000000',
-								},
-								top: {
-									style: 'thin',
-									color: '000000',
-								},
-							},
-						});
-				});
-			}
-			// end data
-			await wb.write('Buildings-Data-Export.xlsx');
-			await delay(2000);
-			await res.download('../.../../Buildings-Data-Export.xlsx', 'Buildings-Data-Export.xlsx', function (err) {
-				if (err) {
-					console.log(err);
-				} else {
-					console.log('GGG');
-				}
-			});
-			await delay(3000);
-			var filePath = '../.../../Buildings-Data-Export.xlsx';
-			fs.unlinkSync(filePath);
-		}
-	} else {
-		return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
-	}
 };
 
 const getZonesData = async (req, res) => {
