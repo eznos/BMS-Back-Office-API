@@ -5,7 +5,6 @@ const { NO_CONTENT_CODE, UNAUTHORIZED_CODE, OK_CODE } = require('../../constants
 const {
 	SOMETHING_WENT_WRONG,
 	INVALID_REFRESH_TOKEN,
-	ZONE_ALREADY_EXISTS,
 	WATER_ZONE_ALREADY_EXISTS,
 } = require('../../constants/error-message.constant');
 const { rooms, zones, buildings, waterZones, accommodations } = require('../repositories/models');
@@ -808,18 +807,51 @@ const getZonesData = async (req, res) => {
 };
 
 const getWaterZonesData = async (req, res) => {
-	const waterZone = await waterZones.findAll({ attributes: ['id', 'name'] });
-	return Response(res, SUCCESS_STATUS, OK_CODE, waterZone);
+	const idZone = req.query.id;
+	try {
+		if (idZone) {
+			const waterZone = await waterZones.findAll({ where: { zoneId: idZone } }, { attributes: ['id', 'name'] });
+			return Response(res, SUCCESS_STATUS, OK_CODE, waterZone);
+		} else {
+			const waterZone = await waterZones.findAll({ attributes: ['id', 'name'] });
+			return Response(res, SUCCESS_STATUS, OK_CODE, waterZone);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
 };
 
 const getBuildingsData = async (req, res) => {
-	const building = await buildings.findAll({ attributes: ['id', 'name'] });
-	return Response(res, SUCCESS_STATUS, OK_CODE, building);
+	const idWater = req.query.id;
+	try {
+		if (idWater) {
+			const building = await buildings.findAll(
+				{ where: { waterZoneId: idWater } },
+				{ attributes: ['id', 'name'] }
+			);
+			return Response(res, SUCCESS_STATUS, OK_CODE, building);
+		} else {
+			const building = await buildings.findAll({ attributes: ['id', 'name'] });
+			return Response(res, SUCCESS_STATUS, OK_CODE, building);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
 };
 
 const getRoomsData = async (req, res) => {
-	const room = await rooms.findAll({ attributes: ['roomNo'] });
-	return Response(res, SUCCESS_STATUS, OK_CODE, room);
+	const idBuilding = req.query.id;
+	try {
+		if (idBuilding) {
+			const room = await rooms.findAll({ where: { buildingId: idBuilding } }, { attributes: ['roomNo'] });
+			return Response(res, SUCCESS_STATUS, OK_CODE, room);
+		} else {
+			const room = await rooms.findAll({ attributes: ['roomNo'] });
+			return Response(res, SUCCESS_STATUS, OK_CODE, room);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
 };
 
 const createZone = async (req, res) => {
@@ -830,7 +862,7 @@ const createZone = async (req, res) => {
 		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
 			const zone = await zones.findOne({ where: { name: name } });
 			if (zone) {
-				return HandlerError(res, CustomError(ZONE_ALREADY_EXISTS));
+				res.status(422).json({ error_message: 'Unprocessable Entity' });
 			} else {
 				await zones.create({ name: name });
 				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
