@@ -902,8 +902,6 @@ const createBuilding = async (req, res) => {
 	const zoneId = req.body.zoneId;
 	const waterZoneId = req.body.waterZoneId;
 	const name = await req.body.name;
-	const lat = await req.body.lat;
-	const lng = await req.body.lng;
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
 		// create all
@@ -918,8 +916,6 @@ const createBuilding = async (req, res) => {
 					zoneId: zoneId,
 					waterZoneId: waterZoneId,
 					name: name,
-					lat: lat,
-					lng: lng,
 				});
 				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 			}
