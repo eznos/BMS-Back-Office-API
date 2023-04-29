@@ -25,25 +25,27 @@ const nodemailer = require('nodemailer');
 const register = async (req, res) => {
 	try {
 		let user = req.body;
+		console.log(user);
 		const isExist = await users.findOne({ where: { email: user.email } });
 		if (isExist) {
 			return HandlerError(res, CustomError(EMAIL_ALREADY_EXISTS));
 		}
-		user.password = await bcrypt.hash(user.password, 10);
+		const newPassword = await bcrypt.hash(user.password, 10);
 		await users.create({
 			username: user.username,
-			password: user.password,
+			password: newPassword,
 			rank: user.rank,
 			affiliation: user.affiliation,
-			firstName: user.first_name,
-			lastName: user.last_name,
+			first_name: user.first_name,
+			last_name: user.last_name,
 			gender: user.gender,
 			email: user.email,
-			phoneNumber: user.phone_number,
-			profileUrl: user.profile_url,
+			phone_number: user.phone_number,
+			profile_url: user.profile_url,
 			role: 'user',
 			deleted: false,
 		});
+		console.log('gg');
 		return Response(res, SUCCESS_STATUS, CREATED_CODE);
 	} catch (err) {
 		return HandlerError(res, err);
@@ -223,22 +225,22 @@ const recoveryCode = async (req, res) => {
 const editPersonalInfo = async (req, res) => {
 	const id = await req.query.id;
 	const data = await req.body;
-	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	// const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
-		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in tokenList.TokenList) {
-			await users.update({ rank: data.rank }, { where: { id: id } });
-			await users.update({ affiliation: data.affiliation }, { where: { id: id } });
-			await users.update({ firstName: data.firstName }, { where: { id: id } });
-			await users.update({ lastName: data.lastName }, { where: { id: id } });
-			await users.update({ email: data.email }, { where: { id: id } });
-			await users.update({ phoneNumber: data.phoneNumber }, { where: { id: id } });
-			await users.update({ gender: data.gender }, { where: { id: id } });
-			await users.update({ profileUrl: data.profileUrl }, { where: { id: id } });
-			console.log(data.rank);
-			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
-		} else {
-			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
-		}
+		// if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in tokenList.TokenList) {
+		await users.update({ rank: data.rank }, { where: { id: id } });
+		await users.update({ affiliation: data.affiliation }, { where: { id: id } });
+		await users.update({ firstName: data.firstName }, { where: { id: id } });
+		await users.update({ lastName: data.lastName }, { where: { id: id } });
+		await users.update({ email: data.email }, { where: { id: id } });
+		await users.update({ phoneNumber: data.phoneNumber }, { where: { id: id } });
+		await users.update({ gender: data.gender }, { where: { id: id } });
+		await users.update({ profileUrl: data.profileUrl }, { where: { id: id } });
+		console.log(data.rank);
+		return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		// } else {
+		// 	return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+		// }
 	} catch (err) {
 		return HandlerError(res, err);
 	}

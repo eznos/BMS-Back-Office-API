@@ -301,7 +301,7 @@ const differencePrice = async (req, res) => {
 							where: {
 								accommodationId: accommodationIds,
 								billingType: 'water',
-								updated_at: { [Op.between]: [startDate, endDate] },
+								created_at: { [Op.between]: [startDate, endDate] },
 							},
 							attributes: { id },
 						});
@@ -319,7 +319,7 @@ const differencePrice = async (req, res) => {
 						// find sum of water price in water zone
 						await billings.update({ totalPay: 0 }, { where: { id: billIds } });
 						var sumOfBills = await billings.sum('price', {
-							where: { accommodationId: accomIds, updated_at: { [Op.between]: [startDate, endDate] } },
+							where: { accommodationId: accomIds, created_at: { [Op.between]: [startDate, endDate] } },
 						});
 						// find diff price
 						const diffPrice = Math.floor((priceZone - sumOfBills) / numberOfBills) >> 0;
@@ -327,19 +327,19 @@ const differencePrice = async (req, res) => {
 						for (let i = 0; i < bills.length; i++) {
 							await billings.update(
 								{ priceDiff: diffPrice },
-								{ where: { id: bills[i].id, updated_at: { [Op.between]: [startDate, endDate] } } }
+								{ where: { id: bills[i].id, created_at: { [Op.between]: [startDate, endDate] } } }
 							);
 							await billings.update(
 								{ status: 'calculated' },
-								{ where: { id: bills[i].id, updated_at: { [Op.between]: [startDate, endDate] } } }
+								{ where: { id: bills[i].id, created_at: { [Op.between]: [startDate, endDate] } } }
 							);
 							await billings.increment(
 								{ totalPay: bills[i].price },
-								{ where: { id: bills[i].id, updated_at: { [Op.between]: [startDate, endDate] } } }
+								{ where: { id: bills[i].id, created_at: { [Op.between]: [startDate, endDate] } } }
 							);
 							await billings.increment(
 								{ totalPay: diffPrice },
-								{ where: { id: bills[i].id, updated_at: { [Op.between]: [startDate, endDate] } } }
+								{ where: { id: bills[i].id, created_at: { [Op.between]: [startDate, endDate] } } }
 							);
 						}
 						return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
