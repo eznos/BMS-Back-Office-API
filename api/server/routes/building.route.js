@@ -13,6 +13,7 @@ const {
 	CreateWaterZone,
 	CreateBuilding,
 	GetRoomsData,
+	GetNotEmptyRoomsData,
 } = require('../controllers/building.controller');
 
 router.get('/buildings', async (req, res) => {
@@ -50,5 +51,8 @@ router.post('/buildings/add/water-zone', async (req, res) => {
 });
 router.post('/buildings/add/building', async (req, res) => {
 	await CreateBuilding(req, res);
+});
+router.get('/data/empty-room', async (req, res) => {
+	await GetNotEmptyRoomsData(req, res);
 });
 module.exports.BuildingRoute = router;

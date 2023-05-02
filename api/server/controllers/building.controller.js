@@ -12,6 +12,7 @@ const { UpdateRoomScheme, UpdateRoomDTO } = require('../domains/building.domain'
 const TokenList = require('./auth.controller');
 const xl = require('excel4node');
 const wb = new xl.Workbook();
+
 const building = async (req, res) => {
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
@@ -825,13 +826,10 @@ const getBuildingsData = async (req, res) => {
 	const idWater = req.query.id;
 	try {
 		if (idWater) {
-			const building = await buildings.findAll(
-				{ where: { waterZoneId: idWater } },
-				{ attributes: ['id', 'name'] }
-			);
+			let building = await buildings.findAll({ where: { waterZoneId: idWater } }, { attributes: ['id', 'name'] });
 			return Response(res, SUCCESS_STATUS, OK_CODE, building);
 		} else {
-			const building = await buildings.findAll({ attributes: ['id', 'name'] });
+			let building = await buildings.findAll({ attributes: ['id', 'name'] });
 			return Response(res, SUCCESS_STATUS, OK_CODE, building);
 		}
 	} catch (err) {
@@ -843,10 +841,31 @@ const getRoomsData = async (req, res) => {
 	const idBuilding = req.query.id;
 	try {
 		if (idBuilding) {
-			const room = await rooms.findAll({ where: { buildingId: idBuilding } }, { attributes: ['roomNo'] });
+			const room = await rooms.findAll(
+				{ where: { buildingId: idBuilding, status: 'empty' } },
+				{ attributes: ['roomNo'] }
+			);
 			return Response(res, SUCCESS_STATUS, OK_CODE, room);
 		} else {
-			const room = await rooms.findAll({ attributes: ['roomNo'] });
+			const room = await rooms.findAll({ where: { status: 'empty' } }, { attributes: ['roomNo'] });
+			return Response(res, SUCCESS_STATUS, OK_CODE, room);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
+const getNotEmptyRoomsData = async (req, res) => {
+	const idBuilding = req.query.id;
+	try {
+		if (idBuilding) {
+			const room = await rooms.findAll(
+				{ where: { buildingId: idBuilding, status: 'not_empty' } },
+				{ attributes: ['roomNo'] }
+			);
+			return Response(res, SUCCESS_STATUS, OK_CODE, room);
+		} else {
+			const room = await rooms.findAll({ where: { status: 'not_empty' } }, { attributes: ['roomNo'] });
 			return Response(res, SUCCESS_STATUS, OK_CODE, room);
 		}
 	} catch (err) {
@@ -874,6 +893,7 @@ const createZone = async (req, res) => {
 		return HandlerError(res, err);
 	}
 };
+
 const createWaterZone = async (req, res) => {
 	const zoneId = req.body.zoneId;
 	const name = req.body.name;
@@ -898,6 +918,7 @@ const createWaterZone = async (req, res) => {
 		return HandlerError(res, err);
 	}
 };
+
 const createBuilding = async (req, res) => {
 	const zoneId = req.body.zoneId;
 	const waterZoneId = req.body.waterZoneId;
@@ -926,6 +947,7 @@ const createBuilding = async (req, res) => {
 		return HandlerError(res, err);
 	}
 };
+
 module.exports.Building = building;
 module.exports.CreateRoom = createRoom;
 module.exports.DeleteRoom = deleteRoom;
@@ -938,3 +960,4 @@ module.exports.GetRoomsData = getRoomsData;
 module.exports.CreateZone = createZone;
 module.exports.CreateWaterZone = createWaterZone;
 module.exports.CreateBuilding = createBuilding;
+module.exports.GetNotEmptyRoomsData = getNotEmptyRoomsData;

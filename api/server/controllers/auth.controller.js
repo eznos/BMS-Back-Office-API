@@ -34,15 +34,15 @@ const register = async (req, res) => {
 		await users.create({
 			username: user.username,
 			password: newPassword,
+			role: 'user',
 			rank: user.rank,
 			affiliation: user.affiliation,
-			first_name: user.first_name,
-			last_name: user.last_name,
+			firstName: user.first_name,
+			lastName: user.last_name,
 			gender: user.gender,
 			email: user.email,
-			phone_number: user.phone_number,
-			profile_url: user.profile_url,
-			role: 'user',
+			phoneNumber: user.phone_number,
+			profileUrl: user.profile_url,
 			deleted: false,
 		});
 		console.log('gg');
@@ -202,7 +202,7 @@ const recoveryCode = async (req, res) => {
 		const user = await users.findOne({
 			where: { email: emailData },
 		});
-		if (user && otpData && type == 'RESET') {
+		if (user && otpData && type === 'RESET') {
 			let delta = totp.validate({
 				token: otpData,
 				window: 1,

@@ -7,10 +7,11 @@ const { users, accommodations, billings, rooms, zones, waterZones, buildings } =
 const TokenList = require('./auth.controller');
 const { Op } = require('sequelize');
 const xl = require('excel4node');
+
 const water = async (req, res) => {
 	var date = req.query.date;
 	var now = new Date(date);
-	var startDate = new Date(now.getFullYear(), now.getMonth() + 0, +2, 1);
+	var startDate = new Date(now.getFullYear(), now.getMonth() + 0, +1, 1);
 	var endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
@@ -179,7 +180,6 @@ const createOldWaterBill = async (req, res) => {
 		const accommodation = await accommodations.findOne({
 			where: { roomId: room.id, userId: user.id, host: true, deleted: false },
 		});
-
 		if (user && room && accommodation) {
 			const createOldBill = await billings.create({
 				billingType: 'water',

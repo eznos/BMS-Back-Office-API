@@ -12,6 +12,7 @@ const { users, accommodations, rooms, zones, waterZones, buildings, billings } =
 const TokenList = require('./auth.controller');
 const nodemailer = require('nodemailer');
 const xl = require('excel4node');
+
 const residentsList = async (req, res) => {
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
@@ -26,6 +27,7 @@ const residentsList = async (req, res) => {
 					include: [
 						{
 							model: rooms,
+							where: {},
 							attributes: [
 								'id',
 								'zoneId',
@@ -158,7 +160,7 @@ const createResident = async (req, res) => {
 
 const deleteResident = async (req, res) => {
 	// user id
-	const id = await req.query.id;
+	const id = await req.body.id;
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	const roomId = await accommodations.findOne({ where: { userId: id } });
 	if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
@@ -188,6 +190,8 @@ const editResident = async (req, res) => {
 				where: { zoneId: zoneId, waterZoneId: waterZoneId, buildingId: buildingId, roomNo: roomNo },
 			});
 			const accommodation = await accommodations.findOne({ where: { user_id: id } });
+			const findOldRoom = await rooms.findOne({ where: { id: accommodation.roomId } });
+			await rooms.update({ status: 'empty' }, { where: { id: findOldRoom.id } });
 			if (user && room) {
 				await users.update({ rank: data.rank }, { where: { id: id } });
 				await users.update({ firstName: data.firstName }, { where: { id: id } });
@@ -205,6 +209,7 @@ const editResident = async (req, res) => {
 		return HandlerError(res, err);
 	}
 };
+
 const exportResidents = async (req, res) => {
 	const id = req.body.id;
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];

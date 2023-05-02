@@ -63,9 +63,9 @@ const chartAndInfo = async (req, res) => {
 		const lastDec = new Date(year, dec + 1, 1);
 
 		// const zone = await zones.findAll({})
-		const Center = '119a3a86-de8b-48b1-a334-42c1d5954a9d';
-		const Asadang = 'da3bdd76-6bc3-44f4-9f65-d7a8536a4bbf';
-		const Suranarai = 'db4ba2ef-a8f5-42b8-a383-8eedf762371a';
+		const Center = 'b20a5096-3ea7-43da-93b3-88d7d184298e';
+		const Asadang = '917da890-fb0d-45cb-b8d8-fe933244e0d6';
+		const Suranarai = '684786ae-ccf9-42c3-a2cd-ce9af09ef0de';
 
 		const roomsInCenter = await rooms.findAll({ where: { zoneId: Center } });
 		const roomsInAsadang = await rooms.findAll({ where: { zoneId: Asadang } });
@@ -570,9 +570,9 @@ const exportOverviews = async (req, res) => {
 		const lastDec = new Date(year, dec + 1, 1);
 
 		// const zone = await zones.findAll({})
-		const Center = '119a3a86-de8b-48b1-a334-42c1d5954a9d';
-		const Asadang = 'da3bdd76-6bc3-44f4-9f65-d7a8536a4bbf';
-		const Suranarai = 'db4ba2ef-a8f5-42b8-a383-8eedf762371a';
+		const Center = 'b20a5096-3ea7-43da-93b3-88d7d184298e';
+		const Asadang = '917da890-fb0d-45cb-b8d8-fe933244e0d6';
+		const Suranarai = '684786ae-ccf9-42c3-a2cd-ce9af09ef0de';
 
 		const roomsInCenter = await rooms.findAll({ where: { zoneId: Center } });
 		const roomsInAsadang = await rooms.findAll({ where: { zoneId: Asadang } });
