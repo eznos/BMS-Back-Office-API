@@ -170,17 +170,12 @@ const createWaterBill = async (req, res) => {
 };
 
 const createOldWaterBill = async (req, res) => {
-	const { rank, firstName, lastName, zone, waterZone, building, roomNo, date, unit, price, priceDiff, totalPay } =
-		req.body;
+	const { rank, firstName, lastName, unit, price, priceDiff, totalPay, date } = req.body;
 	try {
-		const user = await users.findOne({ where: { rank: rank, firstName: firstName, lastName: lastName } });
-		const room = await rooms.findOne({
-			where: { zoneId: zone, waterZoneId: waterZone, buildingId: building, roomNo: roomNo },
-		});
-		const accommodation = await accommodations.findOne({
-			where: { roomId: room.id, userId: user.id, host: true, deleted: false },
-		});
-		if (user && room && accommodation) {
+		const user = await users.findOne({ where: { id: firstName, rank: rank, lastName: lastName } });
+		const accommodation = await accommodations.findOne({ where: { userId: user.id } });
+		const room = await rooms.findOne({ where: { id: accommodation.roomId } });
+		if (user && accommodation && room) {
 			const createOldBill = await billings.create({
 				billingType: 'water',
 				accommodationId: accommodation.id,
@@ -192,11 +187,10 @@ const createOldWaterBill = async (req, res) => {
 				createdAt: date,
 				updatedAt: date,
 			});
-			console.log(date + '-5');
 			await billings.update({ createdAt: date + '-5' }, { where: { id: createOldBill.id } });
 			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 		} else {
-			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+			res.status(400).json({ error_message: "can't find user or room", type: 'unauthorized' });
 		}
 	} catch (err) {
 		return HandlerError(res, err);
@@ -208,32 +202,7 @@ const history = async (req, res) => {
 	const lastName = req.query.lastName;
 	const rank = req.query.rank;
 	try {
-		const electric = await users.findOne({
-			include: [
-				{
-					model: accommodations,
-					attributes: ['host'],
-					where: {
-						deleted: 'false',
-					},
-					include: [
-						{
-							model: billings,
-							attributes: ['billing_type', 'unit', 'price', 'price_diff', 'total_pay', 'created_at'],
-							where: {
-								billing_type: 'electricity',
-							},
-						},
-					],
-				},
-			],
-			where: {
-				rank: rank,
-				firstName: firstName,
-				lastName: lastName,
-			},
-			attributes: ['id'],
-		});
+		console.log(firstName, lastName, rank);
 		const waterbill = await users.findOne({
 			include: [
 				{
@@ -254,17 +223,17 @@ const history = async (req, res) => {
 				},
 			],
 			where: {
+				id: firstName,
 				rank: rank,
-				firstName: firstName,
 				lastName: lastName,
 			},
 			attributes: ['id'],
 		});
 		if (rank && firstName && lastName) {
-			return Response(res, SUCCESS_STATUS, OK_CODE, { electric: electric, water: waterbill });
+			return Response(res, SUCCESS_STATUS, OK_CODE, { water: waterbill });
 		}
 		if (!electric && !waterbill) {
-			res.status(200).json({ status: 'success no data', status_code: 204 });
+			return Response(res, SUCCESS_STATUS, OK_CODE, { water: waterbill });
 		} else {
 			res.status(401).json({ status: 'unauthorized', error_message: 'unauthorized', status_code: 401 });
 		}
@@ -2143,7 +2112,6 @@ const exportHistory = async (req, res) => {
 	}
 };
 
-// electrontonic API
 const electric = async (req, res) => {
 	var now = new Date();
 	var startDate = new Date(now.getFullYear() + 0, 1, 1);
@@ -2315,6 +2283,7 @@ const createElectricityBill = async (req, res) => {
 		return HandlerError(res, err);
 	}
 };
+
 const createOldElectricityBill = async (req, res) => {
 	const { rank, firstName, lastName, zone, building, roomNo, date, unit, price, totalPay } = req.body;
 	try {
@@ -2342,6 +2311,7 @@ const createOldElectricityBill = async (req, res) => {
 		return HandlerError(res, err);
 	}
 };
+
 const exportElectricBills = async (req, res) => {
 	const id = req.body.id;
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
@@ -3462,6 +3432,7 @@ const exportElectricBills = async (req, res) => {
 		return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
 	}
 };
+
 module.exports.Water = water;
 module.exports.UpdateWater = updateWater;
 module.exports.CreateWaterBill = createWaterBill;
