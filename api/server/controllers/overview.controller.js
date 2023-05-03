@@ -396,7 +396,7 @@ const chartAndInfo = async (req, res) => {
 		// end
 
 		// start the info card
-		const Resident = await users.findAll({
+		const resident = await users.findAll({
 			include: [
 				{
 					model: accommodations,
@@ -407,6 +407,7 @@ const chartAndInfo = async (req, res) => {
 					include: [
 						{
 							model: rooms,
+							where: {},
 							attributes: [
 								'id',
 								'zoneId',
@@ -442,12 +443,12 @@ const chartAndInfo = async (req, res) => {
 		});
 		const room = await rooms.findAll({ where: { status: 'empty' } });
 		const exitInMonth = await accommodations.findAll({
-			where: { deleted: true, createdAt: { [Op.between]: [startMonth, endMonth] } },
+			where: { deleted: true, updatedAt: { [Op.between]: [startMonth, endMonth] } },
 		});
 		const stayInMonth = await accommodations.findAll({
-			where: { host: true, deleted: false, createdAt: { [Op.between]: [startMonth, endMonth] } },
+			where: { host: true, deleted: false, updatedAt: { [Op.between]: [startMonth, endMonth] } },
 		});
-		const numberOfResident = Resident.length;
+		const numberOfResident = resident.length;
 		const numberOfRoom = room.length;
 		const numberOfExitInMount = exitInMonth.length;
 		const numberOfComeInMonth = stayInMonth.length;
