@@ -10,7 +10,6 @@ const {
 } = require('../../constants/error-message.constant');
 const { users, accommodations, rooms, zones, waterZones, buildings, billings } = require('../repositories/models');
 const TokenList = require('./auth.controller');
-const nodemailer = require('nodemailer');
 const xl = require('excel4node');
 
 const residentsList = async (req, res) => {
@@ -159,22 +158,25 @@ const createResident = async (req, res) => {
 };
 
 const deleteResident = async (req, res) => {
-	// user id
-	const id = await req.body.id;
-	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
-	const roomId = await accommodations.findOne({ where: { userId: id } });
-	if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
-		if (roomId) {
-			const room = await rooms.findOne({ where: { id: roomId.roomId } });
-			await rooms.update({ status: 'empty' }, { where: { id: room.id } });
-			await accommodations.update({ host: false }, { where: { userId: id } });
-			await accommodations.update({ deleted: true }, { where: { userId: id } });
-			await users.update({ deleted: true }, { where: { id: id } });
-			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+	try {
+		const id = await req.body.id;
+		const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+		const roomId = await accommodations.findOne({ where: { userId: id } });
+		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+			if (roomId) {
+				const room = await rooms.findOne({ where: { id: roomId.roomId } });
+				await rooms.update({ status: 'empty' }, { where: { id: room.id } });
+				await accommodations.update({ host: false }, { where: { userId: id } });
+				await accommodations.update({ deleted: true }, { where: { userId: id } });
+				await users.update({ deleted: true }, { where: { id: id } });
+				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+			}
+			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+		} else {
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
 		}
-		return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
-	} else {
-		return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
+	} catch (err) {
+		return HandlerError(res, err);
 	}
 };
 
@@ -1096,51 +1098,41 @@ const exportResidents = async (req, res) => {
 	}
 };
 
-const sendMail = async (req, res) => {
-	const email = req.body.email;
-	const transporter = nodemailer.createTransport({
-		service: 'hotmail',
-		auth: {
-			user: process.env.EZNOS_MAIL, // your email
-			pass: process.env.EZNOS_PASSWORD, // your password
-		},
-	});
-	// setup email data with unicode symbols
-	const mailOptions = {
-		from: 'Eznos', // sender
-		to: email, // list of receivers
-		subject: 'ทดสอบการส่งอีเมลโดย', // Mail subject
-		html:
-			'<!DOCTYPE html>' +
-			'<html><head><title>Appointment</title>' +
-			'</head><body><div>' +
-			'<img src="https://www.techhub.in.th/wp-content/uploads/2021/05/118283916_b19c5a1f-162b-410b-8169-f58f0d153752.jpg" alt="" width="160">' +
-			'<p>Thank you for your appointment.</p>' +
-			'<p>Here is summery:</p>' +
-			'<p>Name: James Falcon</p>' +
-			'<p>Date: Feb 2, 2017</p>' +
-			'<p>Package: Hair Cut </p>' +
-			'<p>Arrival time: 4:30 PM</p>' +
-			'</div></body></html>',
-	};
-	// send mail with defined transport object
-	transporter.sendMail(mailOptions, function (err, info) {
-		if (err) console.log(err);
-		else console.log(info);
-		return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
-	});
-};
-
 const residentNames = async (req, res) => {
-	const firstName = await users.findAll({ where: { deleted: false }, attributes: ['firstName'] });
-	const lastName = await users.findAll({ attributes: ['lastName'] });
-	return Response(res, SUCCESS_STATUS, OK_CODE, { firstName, lastName });
+	try {
+		const rank = req.query.rank;
+		if (rank) {
+			const firstName = await users.findAll({
+				where: { rank: rank, deleted: false },
+				attributes: ['id', 'firstName'],
+			});
+			return Response(res, SUCCESS_STATUS, OK_CODE, firstName);
+		} else {
+			const firstName = await users.findAll({ where: { deleted: false }, attributes: ['id', 'firstName'] });
+			return Response(res, SUCCESS_STATUS, OK_CODE, firstName);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
 };
-
+const residentLstName = async (req, res) => {
+	try {
+		const id = req.query.id;
+		if (id) {
+			const lastName = await users.findAll({ where: { id: id, deleted: false }, attributes: ['lastName'] });
+			return Response(res, SUCCESS_STATUS, OK_CODE, lastName);
+		} else {
+			const lastName = await users.findAll({ where: { deleted: false }, attributes: ['lastName'] });
+			return Response(res, SUCCESS_STATUS, OK_CODE, lastName);
+		}
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
 module.exports.ResidentsList = residentsList;
 module.exports.CreateResident = createResident;
 module.exports.DeleteResident = deleteResident;
 module.exports.EditResident = editResident;
-module.exports.SendMail = sendMail;
 module.exports.ExportResidents = exportResidents;
 module.exports.ResidentNames = residentNames;
+module.exports.ResidentLstName = residentLstName;
