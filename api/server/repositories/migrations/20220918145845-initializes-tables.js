@@ -468,9 +468,17 @@ module.exports = {
 				},
 				status: {
 					type: DataTypes.ENUM,
-					values: ['draft', 'in_progress', 'calculated', 'exported'],
+					values: ['paid', 'un_paid'],
 					field: 'status',
 					allowNull: false,
+				},
+				beforeUnit: {
+					type: DataTypes.INTEGER,
+					field: 'before_unit',
+				},
+				afterUnit: {
+					type: DataTypes.INTEGER,
+					field: 'after_unit',
 				},
 				unit: {
 					type: DataTypes.INTEGER,
