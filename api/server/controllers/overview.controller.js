@@ -3,15 +3,73 @@ const { SUCCESS_STATUS } = require('../../constants/http-status.constant');
 const { CustomError, HandlerError } = require('../../utils/error.util');
 const { OK_CODE } = require('../../constants/http-status-code.constant');
 const { SOMETHING_WENT_WRONG } = require('../../constants/error-message.constant');
-const { users, zones, waterZones, accommodations, rooms, buildings, billings } = require('../repositories/models');
+const { accommodations, rooms, billings } = require('../repositories/models');
 const { Op } = require('sequelize');
 const xl = require('excel4node');
+
+const zoneOverview = async (req, res) => {
+	const id = req.query.id;
+	try {
+		const sumOfRoomInZone = await rooms.findAll({ where: { zoneId: id } });
+		const roomIds = [];
+		for (let i = 0; i < sumOfRoomInZone.length; i++) {
+			roomIds.push(sumOfRoomInZone[i].id);
+		}
+		const sumOfAccomodation = await accommodations.findAll({ where: { roomId: roomIds } });
+		const accomIds = [];
+		for (let i = 0; i < sumOfAccomodation.length; i++) {
+			accomIds.push(sumOfAccomodation[i].id);
+		}
+		const sumOfBillsInZone = await billings.sum('totalPay', { where: { accommodationId: accomIds } });
+		return Response(res, SUCCESS_STATUS, OK_CODE, { sum: sumOfBillsInZone });
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
+const waterZoneOverview = async (req, res) => {
+	const id = req.query.id;
+	try {
+		const sumOfRoomInZone = await rooms.findAll({ where: { waterZoneId: id } });
+		const roomIds = [];
+		for (let i = 0; i < sumOfRoomInZone.length; i++) {
+			roomIds.push(sumOfRoomInZone[i].id);
+		}
+		const sumOfAccomodation = await accommodations.findAll({ where: { roomId: roomIds } });
+		const accomIds = [];
+		for (let i = 0; i < sumOfAccomodation.length; i++) {
+			accomIds.push(sumOfAccomodation[i].id);
+		}
+		const sumOfBillsInZone = await billings.sum('totalPay', { where: { accommodationId: accomIds } });
+		return Response(res, SUCCESS_STATUS, OK_CODE, { sum: sumOfBillsInZone });
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
+const buildingOverview = async (req, res) => {
+	const id = req.query.id;
+	try {
+		const sumOfRoomInZone = await rooms.findAll({ where: { buildingId: id } });
+		const roomIds = [];
+		for (let i = 0; i < sumOfRoomInZone.length; i++) {
+			roomIds.push(sumOfRoomInZone[i].id);
+		}
+		const sumOfAccomodation = await accommodations.findAll({ where: { roomId: roomIds } });
+		const accomIds = [];
+		for (let i = 0; i < sumOfAccomodation.length; i++) {
+			accomIds.push(sumOfAccomodation[i].id);
+		}
+		const sumOfBillsInZone = await billings.sum('totalPay', { where: { accommodationId: accomIds } });
+		return Response(res, SUCCESS_STATUS, OK_CODE, { sum: sumOfBillsInZone });
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
 
 const chartAndInfo = async (req, res) => {
 	try {
 		var now = new Date();
-		var startMonth = new Date(now.getFullYear() + 0, 1, 1);
-		var endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 		var year = now.getFullYear();
 		var jan = 0; // January
 		var feb = 1; // February
@@ -63,9 +121,9 @@ const chartAndInfo = async (req, res) => {
 		const lastDec = new Date(year, dec + 1, 1);
 
 		// const zone = await zones.findAll({})
-		const Center = 'b20a5096-3ea7-43da-93b3-88d7d184298e';
-		const Asadang = '917da890-fb0d-45cb-b8d8-fe933244e0d6';
-		const Suranarai = '684786ae-ccf9-42c3-a2cd-ce9af09ef0de';
+		const Center = 'c3d94f86-1a14-4733-b83e-f244f28a7f35';
+		const Asadang = 'aa8dcec2-6236-4d7d-b174-7f31599daee0';
+		const Suranarai = '59fd79e8-e189-4504-ae08-1c1817e03d84';
 
 		const roomsInCenter = await rooms.findAll({ where: { zoneId: Center } });
 		const roomsInAsadang = await rooms.findAll({ where: { zoneId: Asadang } });
@@ -394,74 +452,8 @@ const chartAndInfo = async (req, res) => {
 			},
 		});
 		// end
-
-		// start the info card
-		const resident = await users.findAll({
-			include: [
-				{
-					model: accommodations,
-					attributes: ['id', 'host'],
-					where: {
-						deleted: 'false',
-					},
-					include: [
-						{
-							model: rooms,
-							where: {},
-							attributes: [
-								'id',
-								'zoneId',
-								'waterZoneId',
-								'buildingId',
-								'roomNo',
-								'roomType',
-								'electricityNo',
-								'electricityMeterNo',
-								'waterNo',
-								'waterMeterNo',
-								'status',
-							],
-							include: [
-								{
-									model: zones,
-									attributes: ['id', 'name'],
-								},
-								{
-									model: waterZones,
-									attributes: ['id', 'name'],
-								},
-								{
-									model: buildings,
-									attributes: ['id', 'name'],
-								},
-							],
-						},
-					],
-				},
-			],
-			attributes: ['id', 'rank', 'firstName', 'lastName'],
-		});
-		const room = await rooms.findAll({ where: { status: 'empty' } });
-		const exitInMonth = await accommodations.findAll({
-			where: { deleted: true, updatedAt: { [Op.between]: [startMonth, endMonth] } },
-		});
-		const stayInMonth = await accommodations.findAll({
-			where: { host: true, deleted: false, updatedAt: { [Op.between]: [startMonth, endMonth] } },
-		});
-		const numberOfResident = resident.length;
-		const numberOfRoom = room.length;
-		const numberOfExitInMount = exitInMonth.length;
-		const numberOfComeInMonth = stayInMonth.length;
-		// end the info card
-
 		return Response(res, SUCCESS_STATUS, OK_CODE, {
 			billings: {
-				info: {
-					numberOfResident: numberOfResident,
-					numberOfRoom: numberOfRoom,
-					numberOfExitInMount: numberOfExitInMount,
-					numberOfComeInMonth: numberOfComeInMonth,
-				},
 				zone: {
 					Center: {
 						jan: sumOfBillsInCenterJan,
@@ -518,8 +510,6 @@ const exportOverviews = async (req, res) => {
 	const wb = new xl.Workbook();
 	try {
 		var now = new Date();
-		var startMonth = new Date(now.getFullYear() + 0, 1, 1);
-		var endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 		var year = now.getFullYear();
 		var jan = 0; // January
 		var feb = 1; // February
@@ -533,7 +523,6 @@ const exportOverviews = async (req, res) => {
 		var oct = 9; // October
 		var nov = 10; // November
 		var dec = 11; // December
-
 		const firstJan = new Date(year, jan, +1, 0);
 		const lastJan = new Date(year, jan + 1, 1);
 
@@ -571,9 +560,9 @@ const exportOverviews = async (req, res) => {
 		const lastDec = new Date(year, dec + 1, 1);
 
 		// const zone = await zones.findAll({})
-		const Center = 'b20a5096-3ea7-43da-93b3-88d7d184298e';
-		const Asadang = '917da890-fb0d-45cb-b8d8-fe933244e0d6';
-		const Suranarai = '684786ae-ccf9-42c3-a2cd-ce9af09ef0de';
+		const Center = 'c3d94f86-1a14-4733-b83e-f244f28a7f35';
+		const Asadang = 'aa8dcec2-6236-4d7d-b174-7f31599daee0';
+		const Suranarai = '59fd79e8-e189-4504-ae08-1c1817e03d84';
 
 		const roomsInCenter = await rooms.findAll({ where: { zoneId: Center } });
 		const roomsInAsadang = await rooms.findAll({ where: { zoneId: Asadang } });
@@ -1082,70 +1071,12 @@ const exportOverviews = async (req, res) => {
 			this.sumOfBillsInAsadangDec = sumOfBillsInAsadangDec;
 		}
 		// end
-		// start the info card
-		const Resident = await users.findAll({
-			include: [
-				{
-					model: accommodations,
-					attributes: ['id', 'host'],
-					where: {
-						deleted: 'false',
-					},
-					include: [
-						{
-							model: rooms,
-							attributes: [
-								'id',
-								'zoneId',
-								'waterZoneId',
-								'buildingId',
-								'roomNo',
-								'roomType',
-								'electricityNo',
-								'electricityMeterNo',
-								'waterNo',
-								'waterMeterNo',
-								'status',
-							],
-							include: [
-								{
-									model: zones,
-									attributes: ['id', 'name'],
-								},
-								{
-									model: waterZones,
-									attributes: ['id', 'name'],
-								},
-								{
-									model: buildings,
-									attributes: ['id', 'name'],
-								},
-							],
-						},
-					],
-				},
-			],
-			attributes: ['id', 'rank', 'firstName', 'lastName'],
-		});
-		const room = await rooms.findAll({ where: { status: 'empty' } });
-		const exitInMonth = await accommodations.findAll({
-			where: { deleted: true, createdAt: { [Op.between]: [startMonth, endMonth] } },
-		});
-		const stayInMonth = await accommodations.findAll({
-			where: { host: true, deleted: false, createdAt: { [Op.between]: [startMonth, endMonth] } },
-		});
-		const numberOfResident = Resident.length;
-		const numberOfRoom = room.length;
-		const numberOfExitInMount = exitInMonth.length;
-		const numberOfComeInMonth = stayInMonth.length;
-		// end the info card
 
 		const ws = wb.addWorksheet('Data', {
 			disableRowSpansOptimization: true,
 		});
 		// header satart
 		const headerRows1 = 3;
-
 		ws.cell(headerRows1, 2)
 			.string('มกราคม')
 			.style({
@@ -2924,128 +2855,6 @@ const exportOverviews = async (req, res) => {
 					},
 				});
 		}
-		if (numberOfResident || numberOfRoom || numberOfExitInMount || numberOfComeInMonth) {
-			ws.cell(5, 16)
-				.number(numberOfResident)
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(5, 17)
-				.number(numberOfRoom)
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(5, 18)
-				.number(numberOfExitInMount)
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-			ws.cell(5, 19)
-				.number(numberOfComeInMonth)
-				.style({
-					alignment: {
-						vertical: ['center'],
-						horizontal: ['left'],
-					},
-					font: {
-						color: '000000',
-						size: 12,
-					},
-					border: {
-						bottom: {
-							style: 'thin',
-							color: '000000',
-						},
-						right: {
-							style: 'thin',
-							color: '000000',
-						},
-						left: {
-							style: 'thin',
-							color: '000000',
-						},
-						top: {
-							style: 'thin',
-							color: '000000',
-						},
-					},
-				});
-		}
 		// end data
 		await delay(550);
 		wb.write(`Overviews-Data-Export.xlsx`, res);
@@ -3056,3 +2865,6 @@ const exportOverviews = async (req, res) => {
 
 module.exports.ChartAndInfo = chartAndInfo;
 module.exports.ExportOverviews = exportOverviews;
+module.exports.ZoneOverview = zoneOverview;
+module.exports.WaterZoneOverview = waterZoneOverview;
+module.exports.BuildingOverview = buildingOverview;
