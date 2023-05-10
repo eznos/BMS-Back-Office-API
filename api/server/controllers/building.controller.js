@@ -182,6 +182,36 @@ const exportBuildings = async (req, res) => {
 			if (room) {
 				const ws = wb.addWorksheet('Data');
 				const headerRows = 3;
+				ws.cell(1, 1)
+					.string('ตารางสถานะห้องพัก')
+					.style({
+						alignment: {
+							vertical: ['center'],
+							horizontal: ['left'],
+						},
+						font: {
+							color: '000000',
+							size: 12,
+						},
+						border: {
+							bottom: {
+								style: 'thin',
+								color: '000000',
+							},
+							right: {
+								style: 'thin',
+								color: '000000',
+							},
+							left: {
+								style: 'thin',
+								color: '000000',
+							},
+							top: {
+								style: 'thin',
+								color: '000000',
+							},
+						},
+					});
 				ws.cell(headerRows, 1)
 					.string('ลำดับ')
 					.style({
@@ -897,23 +927,23 @@ const createZone = async (req, res) => {
 const createWaterZone = async (req, res) => {
 	const zoneId = req.body.zoneId;
 	const name = req.body.name;
-	// const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
+	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	try {
 		// create all
-		// if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
-		const waterZone = await waterZones.findOne({ where: { name: name } });
-		const zone = await zones.findOne({ where: { id: zoneId } });
+		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
+			const waterZone = await waterZones.findOne({ where: { name: name } });
+			const zone = await zones.findOne({ where: { id: zoneId } });
 
-		if (waterZone && !zone) {
-			console.log(1);
-			return HandlerError(res, CustomError(WATER_ZONE_ALREADY_EXISTS));
+			if (waterZone && !zone) {
+				console.log(1);
+				return HandlerError(res, CustomError(WATER_ZONE_ALREADY_EXISTS));
+			} else {
+				await waterZones.create({ zoneId: zoneId, name: name });
+				return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+			}
 		} else {
-			await waterZones.create({ zoneId: zoneId, name: name });
-			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+			return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
 		}
-		// } else {
-		// 	return Response(res, INVALID_REFRESH_TOKEN, UNAUTHORIZED_CODE);
-		// }
 	} catch (err) {
 		return HandlerError(res, err);
 	}

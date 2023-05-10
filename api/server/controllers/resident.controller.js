@@ -112,16 +112,21 @@ const createResident = async (req, res) => {
 							host: true,
 							deleted: false,
 						});
+						console.log(accommodation);
 						await rooms.update({ status: 'not_empty' }, { where: { id: room.id } });
+						console.log('before create');
 						await billings.create({
 							billingType: 'water',
 							accommodationId: accommodation.id,
-							status: 'draft',
+							status: 'un_paid',
+							beforeUnit: 0,
+							afterUnit: 0,
 							unit: 0,
 							price: 0,
 							priceDiff: 0,
 							totalPay: 0,
 						});
+						console.log('after create');
 						return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
 					} else {
 						return HandlerError(res, CustomError(INVALID_ROOM_NO));
@@ -139,7 +144,7 @@ const createResident = async (req, res) => {
 				await billings.create({
 					billingType: 'water',
 					accommodationId: accommodation.id,
-					status: 'draft',
+					status: 'un_paid',
 					unit: 0,
 					price: 0,
 					priceDiff: 0,
@@ -184,6 +189,8 @@ const editResident = async (req, res) => {
 	const id = await req.query.id;
 	const getRefreshTokenFromHeader = await req.headers['x-refresh-token'];
 	const { rank, firstName, lastName, zoneId, waterZoneId, buildingId, roomNo } = req.body;
+	console.log(id);
+	console.log(req.body);
 	try {
 		if (getRefreshTokenFromHeader && getRefreshTokenFromHeader in TokenList.TokenList) {
 			const data = { rank, firstName, lastName, zoneId, waterZoneId, buildingId, roomNo };
@@ -265,6 +272,36 @@ const exportResidents = async (req, res) => {
 			const ws = wb.addWorksheet('Data');
 			// header satart
 			const headerRows = 3;
+			ws.cell(1, 1)
+				.string('ตารางผู้อยู่อาศัย')
+				.style({
+					alignment: {
+						vertical: ['center'],
+						horizontal: ['left'],
+					},
+					font: {
+						color: '000000',
+						size: 12,
+					},
+					border: {
+						bottom: {
+							style: 'thin',
+							color: '000000',
+						},
+						right: {
+							style: 'thin',
+							color: '000000',
+						},
+						left: {
+							style: 'thin',
+							color: '000000',
+						},
+						top: {
+							style: 'thin',
+							color: '000000',
+						},
+					},
+				});
 			ws.cell(headerRows, 1)
 				.string('ลำดับ')
 				.style({
