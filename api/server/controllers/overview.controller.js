@@ -10,18 +10,18 @@ const xl = require('excel4node');
 const zoneOverview = async (req, res) => {
 	const id = req.query.id;
 	try {
-		const sumOfRoomInZone = await rooms.findAll({ where: { zoneId: id } });
+		const sumOfRoomInWaterZone = await rooms.findAll({ where: { zoneId: id } });
 		const roomIds = [];
-		for (let i = 0; i < sumOfRoomInZone.length; i++) {
-			roomIds.push(sumOfRoomInZone[i].id);
+		for (let i = 0; i < sumOfRoomInWaterZone.length; i++) {
+			roomIds.push(sumOfRoomInWaterZone[i].id);
 		}
 		const sumOfAccomodation = await accommodations.findAll({ where: { roomId: roomIds } });
 		const accomIds = [];
 		for (let i = 0; i < sumOfAccomodation.length; i++) {
 			accomIds.push(sumOfAccomodation[i].id);
 		}
-		const sumOfBillsInZone = await billings.sum('totalPay', { where: { accommodationId: accomIds } });
-		return Response(res, SUCCESS_STATUS, OK_CODE, { sum: sumOfBillsInZone });
+		const sumOfBillsInWaterZone = await billings.sum('totalPay', { where: { accommodationId: accomIds } });
+		return Response(res, SUCCESS_STATUS, OK_CODE, { sum: sumOfBillsInWaterZone });
 	} catch (err) {
 		return HandlerError(res, err);
 	}
@@ -30,18 +30,18 @@ const zoneOverview = async (req, res) => {
 const waterZoneOverview = async (req, res) => {
 	const id = req.query.id;
 	try {
-		const sumOfRoomInZone = await rooms.findAll({ where: { waterZoneId: id } });
+		const sumOfRoomInWaterZone = await rooms.findAll({ where: { waterZoneId: id } });
 		const roomIds = [];
-		for (let i = 0; i < sumOfRoomInZone.length; i++) {
-			roomIds.push(sumOfRoomInZone[i].id);
+		for (let i = 0; i < sumOfRoomInWaterZone.length; i++) {
+			roomIds.push(sumOfRoomInWaterZone[i].id);
 		}
 		const sumOfAccomodation = await accommodations.findAll({ where: { roomId: roomIds } });
 		const accomIds = [];
 		for (let i = 0; i < sumOfAccomodation.length; i++) {
 			accomIds.push(sumOfAccomodation[i].id);
 		}
-		const sumOfBillsInZone = await billings.sum('totalPay', { where: { accommodationId: accomIds } });
-		return Response(res, SUCCESS_STATUS, OK_CODE, { sum: sumOfBillsInZone });
+		const sumOfBillsInWaterZone = await billings.sum('totalPay', { where: { accommodationId: accomIds } });
+		return Response(res, SUCCESS_STATUS, OK_CODE, { sum: sumOfBillsInWaterZone });
 	} catch (err) {
 		return HandlerError(res, err);
 	}
@@ -50,18 +50,18 @@ const waterZoneOverview = async (req, res) => {
 const buildingOverview = async (req, res) => {
 	const id = req.query.id;
 	try {
-		const sumOfRoomInZone = await rooms.findAll({ where: { buildingId: id } });
+		const sumOfRoomInWaterZone = await rooms.findAll({ where: { buildingId: id } });
 		const roomIds = [];
-		for (let i = 0; i < sumOfRoomInZone.length; i++) {
-			roomIds.push(sumOfRoomInZone[i].id);
+		for (let i = 0; i < sumOfRoomInWaterZone.length; i++) {
+			roomIds.push(sumOfRoomInWaterZone[i].id);
 		}
 		const sumOfAccomodation = await accommodations.findAll({ where: { roomId: roomIds } });
 		const accomIds = [];
 		for (let i = 0; i < sumOfAccomodation.length; i++) {
 			accomIds.push(sumOfAccomodation[i].id);
 		}
-		const sumOfBillsInZone = await billings.sum('totalPay', { where: { accommodationId: accomIds } });
-		return Response(res, SUCCESS_STATUS, OK_CODE, { sum: sumOfBillsInZone });
+		const sumOfBillsInWaterZone = await billings.sum('totalPay', { where: { accommodationId: accomIds } });
+		return Response(res, SUCCESS_STATUS, OK_CODE, { sum: sumOfBillsInWaterZone });
 	} catch (err) {
 		return HandlerError(res, err);
 	}

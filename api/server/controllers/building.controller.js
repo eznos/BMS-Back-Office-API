@@ -978,6 +978,20 @@ const createBuilding = async (req, res) => {
 	}
 };
 
+const checkEmptyRooms = async (req, res) => {
+	const id = await req.query.id;
+	try {
+		const findEmptyRooms = await rooms.findAll({ where: { buildingId: id, status: 'empty' } });
+		if (findEmptyRooms.length != 0) {
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			res.status(422).json({ error_message: 'no room available', type: 'unprocessable_entity' });
+		}
+	} catch (err) {
+		HandlerError(res, err);
+	}
+};
+
 module.exports.Building = building;
 module.exports.CreateRoom = createRoom;
 module.exports.DeleteRoom = deleteRoom;
@@ -991,3 +1005,4 @@ module.exports.CreateZone = createZone;
 module.exports.CreateWaterZone = createWaterZone;
 module.exports.CreateBuilding = createBuilding;
 module.exports.GetNotEmptyRoomsData = getNotEmptyRoomsData;
+module.exports.CheckEmptyRooms = checkEmptyRooms;
