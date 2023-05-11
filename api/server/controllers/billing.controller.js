@@ -241,14 +241,8 @@ const createOldWaterBill = async (req, res) => {
 };
 
 const history = async (req, res) => {
-	const firstName = req.body.firstName;
-	const lastName = req.body.lastName;
-	const rank = req.body.rank;
 	const id = req.query.id;
-
 	try {
-		console.log(req.body);
-		const findIdUser = await users.findOne({ where: { firstName: firstName, lastName: lastName, rank: rank } });
 		if (id) {
 			const waterbill = await users.findOne({
 				include: [
@@ -283,40 +277,7 @@ const history = async (req, res) => {
 				res.status(401).json({ status: 'unauthorized', error_message: 'unauthorized', status_code: 401 });
 			}
 		} else {
-			const waterbill = await users.findOne({
-				include: [
-					{
-						model: accommodations,
-						attributes: ['host'],
-						where: {
-							deleted: false,
-						},
-						include: [
-							{
-								model: billings,
-								attributes: ['billing_type', 'unit', 'price', 'price_diff', 'total_pay', 'created_at'],
-								where: {
-									billing_type: 'water',
-								},
-							},
-						],
-					},
-				],
-				where: {
-					firstName: firstName,
-					lastName: lastName,
-					rank: rank,
-				},
-				attributes: ['id'],
-			});
-			if (findIdUser) {
-				return Response(res, SUCCESS_STATUS, OK_CODE, { water: waterbill });
-			}
-			if (!waterbill) {
-				return Response(res, SUCCESS_STATUS, OK_CODE, { water: waterbill });
-			} else {
-				res.status(401).json({ status: 'unauthorized', error_message: 'unauthorized', status_code: 401 });
-			}
+			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
 		}
 	} catch (err) {
 		return HandlerError(res, err);
@@ -326,7 +287,6 @@ const history = async (req, res) => {
 const historyAdmin = async (req, res) => {
 	const id = req.query.id;
 	try {
-		console.log(req.query);
 		const findIdUser = await users.findOne({ where: { id: id } });
 		if (findIdUser) {
 			const waterbill = await users.findOne({
