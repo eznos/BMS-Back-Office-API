@@ -255,7 +255,15 @@ const history = async (req, res) => {
 						include: [
 							{
 								model: billings,
-								attributes: ['billing_type', 'unit', 'price', 'price_diff', 'total_pay', 'created_at'],
+								attributes: [
+									'billing_type',
+									'status',
+									'unit',
+									'price',
+									'price_diff',
+									'total_pay',
+									'created_at',
+								],
 								where: {
 									billing_type: 'water',
 								},
@@ -300,7 +308,15 @@ const historyAdmin = async (req, res) => {
 						include: [
 							{
 								model: billings,
-								attributes: ['billing_type', 'unit', 'price', 'price_diff', 'total_pay', 'created_at'],
+								attributes: [
+									'billing_type',
+									'status',
+									'unit',
+									'price',
+									'price_diff',
+									'total_pay',
+									'created_at',
+								],
 								where: {
 									billing_type: 'water',
 								},
