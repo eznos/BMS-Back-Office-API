@@ -6,10 +6,14 @@ const {
 	ZoneOverview,
 	WaterZoneOverview,
 	BuildingOverview,
+	ChartUnit,
 } = require('../controllers/overview.controller');
 
 router.get('/overviews', async (req, res) => {
 	await ChartAndInfo(req, res);
+});
+router.get('/overviews-unit', async (req, res) => {
+	await ChartUnit(req, res);
 });
 router.post('/export', async (req, res) => {
 	await ExportOverviews(req, res);
