@@ -244,37 +244,10 @@ const history = async (req, res) => {
 	const id = req.query.id;
 	try {
 		if (id) {
-			const waterbill = await users.findOne({
-				include: [
-					{
-						model: accommodations,
-						attributes: ['host'],
-						where: {
-							deleted: false,
-						},
-						include: [
-							{
-								model: billings,
-								attributes: [
-									'billing_type',
-									'status',
-									'unit',
-									'price',
-									'price_diff',
-									'total_pay',
-									'created_at',
-								],
-								where: {
-									billing_type: 'water',
-								},
-							},
-						],
-					},
-				],
-				where: {
-					id: id,
-				},
-				attributes: ['id'],
+			const accommodation = await accommodations.findOne({ where: { userId: id } });
+			const waterbill = await billings.findAll({
+				where: { accommodationId: accommodation.id },
+				order: [['createdAt', 'ASC']],
 			});
 			if (id) {
 				return Response(res, SUCCESS_STATUS, OK_CODE, { water: waterbill });
@@ -542,7 +515,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -572,7 +545,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -602,7 +575,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -632,7 +605,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -662,7 +635,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -692,7 +665,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -722,7 +695,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -752,7 +725,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -782,7 +755,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -812,7 +785,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -842,7 +815,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -872,7 +845,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -902,7 +875,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -932,7 +905,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -962,7 +935,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -992,7 +965,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -1022,7 +995,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -1052,7 +1025,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -1082,7 +1055,7 @@ const exportWaterBills = async (req, res) => {
 					.style({
 						alignment: {
 							vertical: ['center'],
-							horizontal: ['justify'],
+							horizontal: ['center'],
 						},
 						font: {
 							color: '000000',
@@ -1118,7 +1091,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1150,7 +1123,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1182,7 +1155,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1214,7 +1187,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1246,7 +1219,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1278,7 +1251,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1310,7 +1283,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1342,7 +1315,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1374,7 +1347,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1406,7 +1379,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1438,7 +1411,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1470,7 +1443,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1502,7 +1475,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1534,7 +1507,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1566,7 +1539,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1598,7 +1571,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1630,7 +1603,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1662,7 +1635,7 @@ const exportWaterBills = async (req, res) => {
 							.style({
 								alignment: {
 									vertical: ['center'],
-									horizontal: ['justify'],
+									horizontal: ['center'],
 									shrinkToFit: true,
 									wrapText: true,
 								},
@@ -1749,7 +1722,7 @@ const exportHistory = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['justify'],
+						horizontal: ['center'],
 					},
 					font: {
 						color: '000000',
@@ -1779,7 +1752,7 @@ const exportHistory = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['justify'],
+						horizontal: ['center'],
 					},
 					font: {
 						color: '000000',
@@ -1809,7 +1782,7 @@ const exportHistory = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['justify'],
+						horizontal: ['center'],
 					},
 					font: {
 						color: '000000',
@@ -1839,7 +1812,7 @@ const exportHistory = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['justify'],
+						horizontal: ['center'],
 					},
 					font: {
 						color: '000000',
@@ -1869,7 +1842,7 @@ const exportHistory = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['justify'],
+						horizontal: ['center'],
 					},
 					font: {
 						color: '000000',
@@ -1899,7 +1872,7 @@ const exportHistory = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['justify'],
+						horizontal: ['center'],
 					},
 					font: {
 						color: '000000',
@@ -1929,7 +1902,7 @@ const exportHistory = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['justify'],
+						horizontal: ['center'],
 					},
 					font: {
 						color: '000000',
@@ -1959,7 +1932,7 @@ const exportHistory = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['justify'],
+						horizontal: ['center'],
 					},
 					font: {
 						color: '000000',
@@ -1989,7 +1962,7 @@ const exportHistory = async (req, res) => {
 				.style({
 					alignment: {
 						vertical: ['center'],
-						horizontal: ['justify'],
+						horizontal: ['center'],
 					},
 					font: {
 						color: '000000',
@@ -2026,7 +1999,7 @@ const exportHistory = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['justify'],
+								horizontal: ['center'],
 							},
 							font: {
 								color: '000000',
@@ -2056,7 +2029,7 @@ const exportHistory = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['justify'],
+								horizontal: ['center'],
 							},
 							font: {
 								color: '000000',
@@ -2086,7 +2059,7 @@ const exportHistory = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['justify'],
+								horizontal: ['center'],
 							},
 							font: {
 								color: '000000',
@@ -2116,7 +2089,7 @@ const exportHistory = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['justify'],
+								horizontal: ['center'],
 							},
 							font: {
 								color: '000000',
@@ -2146,7 +2119,7 @@ const exportHistory = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['justify'],
+								horizontal: ['center'],
 							},
 							font: {
 								color: '000000',
@@ -2176,7 +2149,7 @@ const exportHistory = async (req, res) => {
 						.style({
 							alignment: {
 								vertical: ['center'],
-								horizontal: ['justify'],
+								horizontal: ['center'],
 							},
 							font: {
 								color: '000000',
