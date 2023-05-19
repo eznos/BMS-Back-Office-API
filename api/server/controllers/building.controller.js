@@ -992,6 +992,112 @@ const checkEmptyRooms = async (req, res) => {
 	}
 };
 
+const waterZonesDataTable = async (req, res) => {
+	try {
+		let waterZone = await waterZones.findAll({ attributes: ['id', 'name'] });
+		return Response(res, SUCCESS_STATUS, OK_CODE, waterZone);
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+
+const buildingsDataTable = async (req, res) => {
+	try {
+		let building = await buildings.findAll({ attributes: ['id', 'name'] });
+		return Response(res, SUCCESS_STATUS, OK_CODE, building);
+	} catch (err) {
+		return HandlerError(res, err);
+	}
+};
+// edit
+const editZone = async (req, res) => {
+	const id = req.query.id;
+	const name = req.body.name;
+	try {
+		const updateZone = await zones.update({ name: name }, { where: { id: id } });
+		if (updateZone) {
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+		}
+	} catch (err) {
+		HandlerError(res, err);
+	}
+};
+
+const editWaterZone = async (req, res) => {
+	const id = req.query.id;
+	const name = req.body.name;
+	try {
+		const updateZone = await waterZones.update({ name: name }, { where: { id: id } });
+		if (updateZone) {
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+		}
+	} catch (err) {
+		HandlerError(res, err);
+	}
+};
+
+const editBuilding = async (req, res) => {
+	const id = req.query.id;
+	const name = req.body.name;
+	try {
+		const updateZone = await buildings.update({ name: name }, { where: { id: id } });
+		if (updateZone) {
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+		}
+	} catch (err) {
+		HandlerError(res, err);
+	}
+};
+// delete
+const deleteZone = async (req, res) => {
+	const id = req.query.id;
+	try {
+		const updateZone = await zones.destroy({ where: { id: id } });
+		console.log(updateZone);
+		if (updateZone) {
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+		}
+	} catch (err) {
+		HandlerError(res, err);
+	}
+};
+
+const deleteWaterZone = async (req, res) => {
+	const id = req.query.id;
+	try {
+		const updateZone = await waterZones.destroy({ where: { id: id } });
+		if (updateZone) {
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+		}
+	} catch (err) {
+		HandlerError(res, err);
+	}
+};
+
+const deleteBuilding = async (req, res) => {
+	const id = req.query.id;
+	try {
+		const updateZone = await buildings.destroy({ where: { id: id } });
+		if (updateZone) {
+			return Response(res, SUCCESS_STATUS, NO_CONTENT_CODE);
+		} else {
+			return HandlerError(res, CustomError(SOMETHING_WENT_WRONG));
+		}
+	} catch (err) {
+		HandlerError(res, err);
+	}
+};
+
 module.exports.Building = building;
 module.exports.CreateRoom = createRoom;
 module.exports.DeleteRoom = deleteRoom;
@@ -1006,3 +1112,11 @@ module.exports.CreateWaterZone = createWaterZone;
 module.exports.CreateBuilding = createBuilding;
 module.exports.GetNotEmptyRoomsData = getNotEmptyRoomsData;
 module.exports.CheckEmptyRooms = checkEmptyRooms;
+module.exports.WaterZonesDataTable = waterZonesDataTable;
+module.exports.BuildingsDataTable = buildingsDataTable;
+module.exports.EditZone = editZone;
+module.exports.EditWaterZone = editWaterZone;
+module.exports.EditBuilding = editBuilding;
+module.exports.DeleteZone = deleteZone;
+module.exports.DeleteWaterZone = deleteWaterZone;
+module.exports.DeleteBuilding = deleteBuilding;

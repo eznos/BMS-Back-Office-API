@@ -159,9 +159,10 @@ const forgetPassword = async (req, res) => {
 	try {
 		const user = await users.findOne({
 			where: { email: emailData },
-			attributes: ['email'],
+			attributes: ['username', 'email'],
 		});
 		if (user) {
+			console.log(user.username);
 			let otpCode = totp.generate();
 			const transporter = nodemailer.createTransport({
 				service: 'hotmail',
@@ -170,14 +171,12 @@ const forgetPassword = async (req, res) => {
 					pass: process.env.EZNOS_PASSWORD, // your password
 				},
 			});
-			console.log(process.env.EZNOS_MAIL);
-			console.log(process.env.EZNOS_PASSWORD);
 			// setup email data with unicode symbols
 			const mailOptions = {
 				from: process.env.EZNOS_MAIL, // sender
 				to: emailData, // list of receivers
 				subject: 'รหัส OTP ', // Mail subject
-				text: 'รหัส OTP  ' + otpCode,
+				text: 'รหัส OTP  ' + otpCode + ' username ' + user.username,
 			};
 			// send mail with defined transport object
 			transporter.sendMail(mailOptions, function (err, info) {

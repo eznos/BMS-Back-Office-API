@@ -15,6 +15,14 @@ const {
 	GetRoomsData,
 	GetNotEmptyRoomsData,
 	CheckEmptyRooms,
+	WaterZonesDataTable,
+	BuildingsDataTable,
+	EditZone,
+	DeleteZone,
+	EditWaterZone,
+	DeleteWaterZone,
+	EditBuilding,
+	DeleteBuilding,
 } = require('../controllers/building.controller');
 
 router.get('/buildings', async (req, res) => {
@@ -58,5 +66,29 @@ router.get('/data/empty-room', async (req, res) => {
 });
 router.get('/data/check-empty-room', async (req, res) => {
 	await CheckEmptyRooms(req, res);
+});
+router.get('/data/water-zone-table', async (req, res) => {
+	await WaterZonesDataTable(req, res);
+});
+router.get('/data/building-table', async (req, res) => {
+	await BuildingsDataTable(req, res);
+});
+router.patch('/buildings/edit-zone', async (req, res) => {
+	await EditZone(req, res);
+});
+router.delete('/buildings/delete-zone', async (req, res) => {
+	await DeleteZone(req, res);
+});
+router.patch('/buildings/edit-water-zone', async (req, res) => {
+	await EditWaterZone(req, res);
+});
+router.delete('/buildings/delete-water-zone', async (req, res) => {
+	await DeleteWaterZone(req, res);
+});
+router.patch('/buildings/edit-building', async (req, res) => {
+	await EditBuilding(req, res);
+});
+router.delete('/buildings/delete-building', async (req, res) => {
+	await DeleteBuilding(req, res);
 });
 module.exports.BuildingRoute = router;
