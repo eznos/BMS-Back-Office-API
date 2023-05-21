@@ -1696,7 +1696,7 @@ const exportHistory = async (req, res) => {
 					include: [
 						{
 							model: billings,
-							attributes: ['billingType', 'unit', 'price', 'priceDiff', 'totalPay', 'updatedAt'],
+							attributes: ['billingType', 'unit', 'price', 'priceDiff', 'totalPay', 'createdAt'],
 							where: {
 								billing_type: 'water',
 							},
@@ -1705,8 +1705,8 @@ const exportHistory = async (req, res) => {
 				},
 			],
 			where: {
+				id: firstName,
 				rank: rank,
-				firstName: firstName,
 				lastName: lastName,
 			},
 			attributes: ['id'],
