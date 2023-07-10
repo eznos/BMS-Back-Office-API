@@ -1679,12 +1679,10 @@ const exportWaterBills = async (req, res) => {
 };
 
 const exportHistory = async (req, res) => {
-	const firstName = req.body.firstName;
-	const lastName = req.body.lastName;
-	const rank = req.body.rank;
+	const id = req.body.id;
 	const wb = new xl.Workbook();
+	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 	try {
-		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 		const waterbill = await users.findOne({
 			include: [
 				{
@@ -1696,7 +1694,15 @@ const exportHistory = async (req, res) => {
 					include: [
 						{
 							model: billings,
-							attributes: ['billingType', 'unit', 'price', 'priceDiff', 'totalPay', 'createdAt'],
+							attributes: [
+								'billingType',
+								'unit',
+								'price',
+								'priceDiff',
+								'totalPay',
+								'createdAt',
+								'updatedAt',
+							],
 							where: {
 								billing_type: 'water',
 							},
@@ -1705,20 +1711,17 @@ const exportHistory = async (req, res) => {
 				},
 			],
 			where: {
-				id: firstName,
-				rank: rank,
-				lastName: lastName,
+				id: id,
 			},
 			attributes: ['id'],
 		});
+		const user = await users.findOne({ where: { id: id } });
 
-		if (rank && firstName && lastName) {
-			const ws = wb.addWorksheet('Data', {
-				disableRowSpansOptimization: true,
-			});
+		if (user) {
+			const ws = wb.addWorksheet('Data');
 			const headerRows = 3;
 			ws.cell(1, 1)
-				.string(rank)
+				.string(user.rank)
 				.style({
 					alignment: {
 						vertical: ['center'],
@@ -1748,7 +1751,7 @@ const exportHistory = async (req, res) => {
 					},
 				});
 			ws.cell(1, 2)
-				.string(firstName)
+				.string(user.firstName)
 				.style({
 					alignment: {
 						vertical: ['center'],
@@ -1778,7 +1781,7 @@ const exportHistory = async (req, res) => {
 					},
 				});
 			ws.cell(1, 3)
-				.string(lastName)
+				.string(user.lastName)
 				.style({
 					alignment: {
 						vertical: ['center'],
@@ -2177,7 +2180,7 @@ const exportHistory = async (req, res) => {
 				});
 			}
 			await delay(550);
-			wb.write(`FileName.xlsx`, res);
+			wb.write(`History-Export.xlsx`, res);
 		}
 	} catch (err) {
 		return HandlerError(res, err);
